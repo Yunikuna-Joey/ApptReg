@@ -69,9 +69,14 @@ def createEventObject():
 
 #* Adds the event object into company calendar
 def addEvent(eventObject): 
-    calendarService = initializeCalendarService()
-    event = calendarService.events().insert(calendarId=TARGET_CALENDAR_ID, body=eventObject).execute()
-    print('[addEvent]: Event created- %s' % (event.get('htmlLink')))
+    try: 
+        calendarService = initializeCalendarService()
+        # add the event into the company calendar
+        event = calendarService.events().insert(calendarId=TARGET_CALENDAR_ID, body=eventObject).execute()
+        print('[addEvent]: Event created- %s' % (event.get('htmlLink')))
+
+    except Exception as e: 
+        print(f"[addEvent]: An error occurred-- {e}")
 
 #* Deletes the event object from the company calendar via event_id
 def deleteEvent(eventId): 
