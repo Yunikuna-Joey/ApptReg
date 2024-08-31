@@ -12,8 +12,8 @@ smtp_port = os.getenv('EMAIL_PORT')
 smtp_username = os.getenv('EMAIL_CRED')
 smtp_password = os.getenv('PASSWORD_CRED')
 
-# Format the message object 
-def createMessageHeader(): 
+# Format the confirmation message object [need to add in the .ics file attached to the message]
+def createConfirmationMessage(): 
     #* setup MIME 
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
@@ -49,6 +49,9 @@ def createMessageHeader():
     print("[createMessageHeader]: Message object created successfully.")
 
     return message
+
+def createDeleteConfirmationMessage(): 
+    print("Hello World")
 
 # Send the message object to the recipient email address
 def sendEmail(messageObject, recipientEmailAddress): 

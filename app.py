@@ -29,10 +29,11 @@ def main():
         # create an eventObject 
         # add event into Calendar
         # send email about appointment confirmation
-    eventObject = createEventObject()
-    addEvent(eventObject)
-    messageObject = createMessageHeader()
-    sendEmail(messageObject, os.getenv('TEST_USER'))
+    # eventObject = createEventObject()
+    # addEvent(eventObject)
+    # messageObject = createConfirmationMessage()
+    # sendEmail(messageObject, os.getenv('TEST_USER'))
+    displayAllEvents()
 
 
 if __name__ == "__main__": 
