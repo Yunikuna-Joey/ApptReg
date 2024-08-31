@@ -3,7 +3,6 @@ from google.oauth2.service_account import Credentials
 # Creates the connection to one of Google's product API (in our case, Google Calendar)
 from googleapiclient.discovery import build 
 
-import datetime 
 
 from dotenv import load_dotenv
 import os 

@@ -1,6 +1,7 @@
 #* Emailing purposes
 from emailService import * 
 from eventService import * 
+import datetime 
 
 from dotenv import load_dotenv
 import os 
@@ -33,9 +34,11 @@ def main():
     # addEvent(eventObject)
     # messageObject = createConfirmationMessage()
     # sendEmail(messageObject, os.getenv('TEST_USER'))
-    displayAllEvents()
+    # displayAllEvents()
     print("Hello world")
-    
+    newStartTime = datetime.datetime(2024, 9, 1, 14, 0) # September 1 2024, 2:00 PM
+    newEndTime = datetime.datetime(2024, 9, 1, 15, 0)   # September 1 2024, 3:00 PM
+    editEvent("flq1ho9lfpan7ugr1mgjtedadk", newStartTime, newEndTime)
 
 
 if __name__ == "__main__": 
