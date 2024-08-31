@@ -3,6 +3,8 @@ from google.oauth2.service_account import Credentials
 # Creates the connection to one of Google's product API (in our case, Google Calendar)
 from googleapiclient.discovery import build 
 
+import datetime 
+
 from dotenv import load_dotenv
 import os 
 load_dotenv()
@@ -89,3 +91,22 @@ def deleteEvent(eventId):
     
     except Exception as e: 
         print(f"[deleteEvent]: An error occurred-- {e}")
+
+def editEvent(eventId, newStartTime, newEndTime): 
+    try: 
+        calendarService = initializeCalendarService() 
+
+        # Get the event details 
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
+
+        # key into the start time of the event 
+        event['start'] = {'dateTime': newStartTime.isoformat(), 'timeZone': 'America/Los_Angeles'}
+        event['end'] = {'dateTime': newEndTime.isoformat(), 'timeZone': 'America/Los_Angeles'}
+
+        # update the event details 
+        updatedEvent = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+
+        print(f"Event updated: {updatedEvent['updated']}")
+
+    except Exception as e: 
+        print(f"[editEvent]: An error occurred-- {e}")

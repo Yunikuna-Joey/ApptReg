@@ -33,7 +33,7 @@ def main():
     # addEvent(eventObject)
     # messageObject = createConfirmationMessage()
     # sendEmail(messageObject, os.getenv('TEST_USER'))
-    # displayAllEvents()
+    displayAllEvents()
     print("Hello world")
     
 
