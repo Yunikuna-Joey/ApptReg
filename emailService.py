@@ -18,7 +18,7 @@ def createConfirmationMessage():
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
     message['From'] = smtp_username
-    message['To'] = os.getenv('TEST_USER') 
+    message['To'] = os.getenv('TEST_USER') # swap this to recipient user email
     message['Subject'] = "Appointment Confirmation"
 
     #* Message content
@@ -50,8 +50,74 @@ def createConfirmationMessage():
 
     return message
 
-def createDeleteConfirmationMessage(): 
-    print("Hello World")
+def createDeleteConfirmationMessage(recipientEmail): 
+    # setup MIME 
+    message = MIMEMultipart()
+    # setup message headers 
+    message['From'] = smtp_username
+    message['To'] = recipientEmail
+    message['Subject'] = 'Appointment Cancellation'
+    
+    #* Message content 
+    body = """ 
+    Hello insert_customer_name_here, 
+
+    This message is to inform you of your appointment cancellation. 
+
+    Cancelled appointment details: 
+    **Car**: Year, Make, Model 
+    **Location**: Address 
+    **Type of Cleaning**: Interior, exterior, both
+    **Start Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
+    **End Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
+
+    Feel free to re-book your appointment to a time that works best for you. 
+    Have a great day, 
+    Ten (Just an AutoBot)
+
+    Do not reply back to this message, inbox is unmonitored.
+    """
+
+    message.attach(MIMEText(body, 'plain'))
+
+    print("[createDeleteConfirmationMessage]: Message object created successfully.")
+    print(f"This is the message delete confirmation {message}")
+    return message 
+
+def createEditConfirmationMessage(recipientEmail): 
+    # setup MIME 
+    message = MIMEMultipart()
+    # setup message headers 
+    message['From'] = smtp_username
+    message['To'] = recipientEmail
+    message['Subject'] = 'Appointment Modification'
+    
+    #* Message content 
+    body = """ 
+    Hello insert_customer_name_here, 
+
+    This message is to inform you of your appointment change. 
+
+    New appointment details: 
+    **Car**: Year, Make, Model 
+    **Location**: Address 
+    **Type of Cleaning**: Interior, exterior, both
+    **Start Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
+    **End Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
+
+    Thank you for booking with us and we hope to see you soon! 
+
+    Have a great day, 
+    Ten (Just an AutoBot)
+
+    Do not reply back to this message, inbox is unmonitored.
+    """
+
+    message.attach(MIMEText(body, 'plain'))
+
+    print("[createEditConfirmationMessage]: Message object created successfully.")
+    print(f"This is the message edit confirmation {message}")
+    return message 
 
 # Send the message object to the recipient email address
 def sendEmail(messageObject, recipientEmailAddress): 

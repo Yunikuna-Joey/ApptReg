@@ -95,10 +95,10 @@ def editEvent(eventId, newStartTime, newEndTime):
     try: 
         calendarService = initializeCalendarService() 
 
-        # Get the event details 
+        # Get the current event details 
         event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
 
-        # key into the start time of the event 
+        # key into the start time of the current event 
         event['start'] = {'dateTime': newStartTime.isoformat(), 'timeZone': 'America/Los_Angeles'}
         event['end'] = {'dateTime': newEndTime.isoformat(), 'timeZone': 'America/Los_Angeles'}
 
