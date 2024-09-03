@@ -1,6 +1,7 @@
 #* Emailing purposes
 from emailService import * 
 from eventService import * 
+from classify import *
 import datetime 
 
 from dotenv import load_dotenv
@@ -53,13 +54,13 @@ def main():
     # sendEmail(messageObject, os.getenv('TEST_USER'))
     # displayAllEvents()
     # print("Hello world")
-    print("Initializing the chat")
     # newStartTime = datetime.datetime(2024, 9, 1, 14, 0) # September 1 2024, 2:00 PM
     # newEndTime = datetime.datetime(2024, 9, 1, 15, 0)   # September 1 2024, 3:00 PM
     # editEvent("flq1ho9lfpan7ugr1mgjtedadk", newStartTime, newEndTime)
     # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
     # createEditConfirmationMessage(os.getenv('TEST_USER'))
 
+    print("Initializing the chat")
     model = initializeChatModel()
     while True: 
         # Register user input 
@@ -70,10 +71,17 @@ def main():
             break
 
         # invoke a response from the chat model
-        botResponse = model.generate_content(userInput)
+        # botResponse = model.generate_content(userInput)
 
-        print(f"[Bot]: {botResponse.text}")
+        # print(f"[Bot]: {botResponse.text}")
 
+        output = classifyUserAction(model, userInput)
+
+        if output: 
+            botResponse = processUserAction(output)
+            print(f"[Bot]: {botResponse.text}")
+
+       
 
 if __name__ == "__main__": 
     main()
