@@ -2,6 +2,7 @@
 from emailService import * 
 from eventService import * 
 from classify import *
+from testrun import *
 import datetime 
 
 from dotenv import load_dotenv
@@ -66,49 +67,23 @@ def example():
     print(response.text)
 
 def main(): 
-    #* Test scenario 
-        # create an eventObject 
-        # add event into Calendar
-        # send email about appointment confirmation
-    # eventObject = createEventObject()
-    # addEvent(eventObject)
-    # messageObject = createConfirmationMessage()
-    # sendEmail(messageObject, os.getenv('TEST_USER'))
-    # displayAllEvents()
-    # print("Hello world")
-    # newStartTime = datetime.datetime(2024, 9, 1, 14, 0) # September 1 2024, 2:00 PM
-    # newEndTime = datetime.datetime(2024, 9, 1, 15, 0)   # September 1 2024, 3:00 PM
-    # editEvent("flq1ho9lfpan7ugr1mgjtedadk", newStartTime, newEndTime)
-    # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
-    # createEditConfirmationMessage(os.getenv('TEST_USER'))
-
     print("Initializing the chat")
     model = initializeChatModel()
-    intentModel = initializeClassificationModel()
-    intentObject = ""
+
     while True: 
-        # Register user input 
+        # Process the user input 
         userInput = input("[You]: ")
 
-        # Enhance the exit conditions
+        # create the exit conditions 
         if userInput.lower() in ["exit", "quit", "stop"]: 
             print("[Ten]: Ending the conversation, Goodbye!")
             break
 
-        # invoke a response from the chat model
+        # Process the bot response (this is an response object)
         tenResponse = model.generate_content(userInput)
 
-        # determine if user has declared some intent
-        if not intentObject:
-            intentObject = classifyUserAction(intentModel, userInput)
-        else:
-            processUserAction(intentObject)
-            # if intentObject: 
-            #     processUserAction(intentObject)
-
+        # output the bot response.text
         print(f"[Bot]: {tenResponse.text}")
-
-       
 
 if __name__ == "__main__": 
     main()
