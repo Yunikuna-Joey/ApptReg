@@ -69,21 +69,30 @@ def example():
 def main(): 
     print("Initializing the chat")
     model = initializeChatModel()
+    intentModel = initializeClassificationModel()
+    intentObject = ""
 
     while True: 
-        # Process the user input 
+        # Register user input 
         userInput = input("[You]: ")
 
-        # create the exit conditions 
+        # Enhance the exit conditions
         if userInput.lower() in ["exit", "quit", "stop"]: 
             print("[Ten]: Ending the conversation, Goodbye!")
             break
 
-        # Process the bot response (this is an response object)
+        # determine if user has declared some intent
+        intentObject = classifyUserAction(intentModel, userInput)
+
+        # invoke a response from the chat model
         tenResponse = model.generate_content(userInput)
 
-        # output the bot response.text
-        print(f"[Bot]: {tenResponse.text}")
+        if intentObject == 'create': 
+            print(f"[Ten]: {tenResponse.text}")
+            
+        else: 
+            print(f"[Ten]: {tenResponse.text}")
+    
 
 if __name__ == "__main__": 
     main()

@@ -5,18 +5,31 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def classifyUserAction(model, userInput):
-    # Generate the response from the LLM
-    response = model.generate_content(userInput)
-    print("[LLM Response]:", response.text)
+# def classifyUserAction(model, userInput):
+#     # Generate the response from the LLM
+#     response = model.generate_content(userInput)
+#     print("[LLM Response]:", response.text)
 
-    # Parse the response as JSON
-    try:
-        result = json.loads(response.text)
+#     # Parse the response as JSON
+#     try:
+#         result = json.loads(response.text)
+#         return result
+#     except json.JSONDecodeError:
+#         print("[Error]: Failed to decode LLM response")
+#         return None
+
+#* New attempt at function
+def classifyUserAction(model, userInput):  # returns a string
+    response = model.generate_content(userInput)
+    print(f"[HelperBot]: {response.text}")
+
+    try: 
+        result = response.text
         return result
-    except json.JSONDecodeError:
-        print("[Error]: Failed to decode LLM response")
-        return None
+    except Exception as e: 
+        print(f"[Error]: An error occurred-- {e}")
+        return None 
+
     
 def processUserAction(output): 
     intent = output.get('intent')

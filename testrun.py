@@ -20,6 +20,27 @@ def testRun():
 def run1(): 
     print("Initializing the chat")
     model = initializeChatModel()
+
+    while True: 
+        # Process the user input 
+        userInput = input("[You]: ")
+
+        # create the exit conditions 
+        if userInput.lower() in ["exit", "quit", "stop"]: 
+            print("[Ten]: Ending the conversation, Goodbye!")
+            break
+
+        # Process the bot response (this is an response object)
+        tenResponse = model.generate_content(userInput)
+
+        # print(f"This is the response.text object type {type(tenResponse.text)}")
+
+        # output the bot response.text
+        print(f"[Bot]: {tenResponse.text}")
+
+def run2(): 
+    print("Initializing the chat")
+    model = initializeChatModel()
     intentModel = initializeClassificationModel()
     intentObject = ""
 
@@ -45,7 +66,7 @@ def run1():
 
         print(f"[Bot]: {tenResponse.text}")
 
-def run2(): 
+def run3(): 
     print("Initializing the chat")
     intent = ""
     model = initializeChatModel()
