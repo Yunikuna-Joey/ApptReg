@@ -82,7 +82,8 @@ def main():
             break
 
         # determine if user has declared some intent
-        intentObject = classifyUserAction(intentModel, userInput)
+        if not intentObject:
+            intentObject = classifyUserAction(intentModel, userInput)
 
         # invoke a response from the chat model
         tenResponse = model.generate_content(userInput)
