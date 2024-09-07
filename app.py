@@ -71,6 +71,7 @@ def main():
     model = initializeChatModel()
     intentModel = initializeClassificationModel()
     intentObject = ""
+    eventObject = {}
 
     while True: 
         # Register user input 
@@ -89,6 +90,15 @@ def main():
         tenResponse = model.generate_content(userInput)
 
         if intentObject == 'create': 
+            if 'summary' not in eventObject: 
+                eventObject['summary'] = input("[Ten]: What is your car year, make, and model?")
+            if 'location' not in eventObject: 
+                eventObject['location'] = input("[Ten]: Where is the car going to be?")
+            if 'description' not in eventObject: 
+                eventObject['description'] = input("[Ten]: What kind of wash are you looking for? (Interior, Exterior, Both)")
+            if 'start' not in eventObject: 
+                eventObject['start'] = input("[Ten]: What date and time works best for you?")
+            
             print(f"[Ten]: {tenResponse.text}")
             
         else: 
