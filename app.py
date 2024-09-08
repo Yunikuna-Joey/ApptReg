@@ -28,7 +28,7 @@ def initializeChatModel():
     model = genai.GenerativeModel(
         model_name=os.getenv('API_MODEL'), 
         generation_config=model_config, 
-        system_instruction=os.getenv('SYSTEM_INSTRUCTION'),
+        system_instruction=os.getenv('SYSTEM_INSTRUCTION1'),
     )
 
     print('[initializeChatModel]: Primary chat model initialized.')
@@ -68,6 +68,7 @@ def example():
 
 def main(): 
     print("Initializing the chat")
+    
     model = initializeChatModel()
     intentModel = initializeClassificationModel()
     intentObject = ""
