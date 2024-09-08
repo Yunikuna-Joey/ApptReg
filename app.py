@@ -104,6 +104,5 @@ def main():
         else: 
             print(f"[Ten]: {tenResponse.text}")
     
-
 if __name__ == "__main__": 
     main()

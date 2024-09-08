@@ -67,7 +67,7 @@ def displayAllEvents():
 
 #     print("[createEventObject]: Ran successsfully")
 #     return eventObject
-
+    
 def createEventObject(carType, location, description, start):
     eventObject = { 
         'summary': carType, 
