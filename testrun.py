@@ -19,24 +19,29 @@ def testRun():
 
 def run1(): 
     print("Initializing the chat")
+
     model = initializeChatModel()
+    intentModel = initializeClassificationModel()
+    intentObject = ""
 
     while True: 
-        # Process the user input 
+        # Register user input 
         userInput = input("[You]: ")
-
-        # create the exit conditions 
+        
+        # Exit conditions
         if userInput.lower() in ["exit", "quit", "stop"]: 
             print("[Ten]: Ending the conversation, Goodbye!")
             break
 
-        # Process the bot response (this is an response object)
+        # determine if user has declared some intent
+        if not intentObject:
+            intentObject = classifyUserAction(intentModel, userInput)
+
+        # invoke a response from the chat model
         tenResponse = model.generate_content(userInput)
 
-        # print(f"This is the response.text object type {type(tenResponse.text)}")
-
-        # output the bot response.text
-        print(f"[Bot]: {tenResponse.text}")
+        # This is the actual bot reponse to the user input
+        print(f"[Ten]: {tenResponse.text}")
 
 def run2(): 
     print("Initializing the chat")
@@ -59,6 +64,21 @@ def run2():
         # determine if user has declared some intent
         if not intentObject:
             intentObject = classifyUserAction(intentModel, userInput)
+            while intentObject == 'create': 
+                print("[Teni]: What address is this car located at?")
+                location = input("[You]: ")
+                print("[Teni]: What day and time are you looking for?")
+                dayPref = input("[You]: ")
+                print("[Teni]: What type of car do you have? (Sedan, Coupe, Truck, SUV... etc)")
+                carType = input("[You]: ")
+                print("[Teni]: What is the year, make, and model of your car?")
+                carModel = input("[You]: ")
+                print("[Teni]: What type of cleaning are you looking for? (Interior, exterior, both)") 
+                cleanType = input("[You]: ")
+                print("[Teni]: Is there any pet hair that we should worry about? (Yes or no)")
+                petHair = input("[You]: ")
+
+                createEventObject(carModel, location, cleanType, dayPref)
         else:
             processUserAction(intentObject)
             # if intentObject: 
