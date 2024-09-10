@@ -141,3 +141,99 @@ def run3():
             # Continue with the regular chatbot response
             tenResponse = model.generate_content(userInput)
             print(f"[Bot]: {tenResponse.text}")
+
+def proto1(): 
+    print('Initializing the chat')
+    
+    model = initializeChatModel()
+    intentModel = initializeClassificationModel() 
+    intentObject = ""
+    eventObject = { 
+        'summary': None, 
+        'location': None, 
+        'description': None, 
+        'start': None, 
+    }
+
+    while True: 
+        userInput = input("[You]: ")
+
+        # Exit conditions 
+        if userInput.lower().strip() in ["exit", "quit", "stop"]: 
+            print("[Ten]: Ending the conversation, Goodbye!")
+            break
+            
+
+        # classifies whether or not a valid user intention was made [create, modify, delete]
+        if not intentObject: 
+            intentObject = intentModel.generate_content(userInput)
+
+        # if there was a 'create' intention then do something
+        if intentObject.text.lower().strip() in ['create', 'appointment scheduling']: 
+            # iterate over the eventObject items 
+            for field, value in eventObject.items(): 
+                if value == None: 
+                    # generate a question to extract information from the user
+                    prompt = generatePrompt(field)
+                    print(f'[Teni]: {prompt}')
+
+                    # invoke the user to input the missing information
+                    userInput = input("[You]: ")
+                    
+                    #* thoughts about using another LLM prompt to extract the information and pack event object
+                
+                    # eventObject[field] = extractedData
+            
+            # Goes through all of the eventObject values to determine if all values are valid, true, [not None]
+            if all(eventObject.values()):         
+                # pack the eventObject 
+                confirmationObject = createEventObject(
+                    eventObject['summary'], 
+                    eventObject['location'], 
+                    eventObject['description'], 
+                    eventObject['start']
+                )
+                # This will create the actual calendar event in the backend 
+                addEvent(confirmationObject)
+
+                # we expect to see a [createEventObject] and [addEvent] message(s) here
+
+            # response = model.generate_content(userInput)
+            # print(f"[Teni]: {response.text}")
+            # print('[proto1]: I have triggered a create intention conditional.')
+        
+        # otherwise, respond back to user as normal [reset the intentObject if a non-valid one was made as well]
+        else: 
+            # reset the intent object 
+            intentObject = ""
+            response = model.generate_content(userInput)
+            print(f"[Teni]: {response.text}")
+            print(f"This is intentObject after resetting the value. {intentObject}")
+
+               
+def generatePrompt(field): 
+    """ 
+        This will allow for customization of different questions that can be asked 
+        to fill in for the missing (necessary) information to pack the 
+        event object 
+    """
+
+    prompts = {
+        'summary': "What is the summary or title of the appointment?",
+        'location': "Where is this appointment going to take place?",
+        'description': "Please provide a brief description of the appointment.",
+        'start': "When does the appointment start? Please specify date and time.",
+        'end': "When does the appointment end? Please specify date and time."
+    }
+
+    return prompts.get(field, "Could you provide more information?")
+
+#* Not sure if we will utilize this function yet... 
+def extractInformation(model, userInput, field): 
+    response = model.generate_content(userInput)
+
+    #* might want some kind of action that will pack the eventObject data
+
+    # extracted information 
+    data = response.text.strip()
+    return data

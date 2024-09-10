@@ -72,10 +72,10 @@ def generate_prompt(field):
     Generate a custom prompt based on the missing field.
     """
     prompts = {
-        'location': "What address is this car located at?",
-        'dayPref': "What day and time are you looking for?",
-        'carType': "What type of car do you have? (Sedan, Coupe, Truck, SUV... etc)",
-        'carModel': "What is the year, make, and model of your car?",
+        'summary': "What address is this car located at?",
+        'location': "What day and time are you looking for?",
+        'description': "What type of car do you have? (Sedan, Coupe, Truck, SUV... etc)",
+        'start': "What is the year, make, and model of your car?",
         'cleanType': "What type of cleaning are you looking for? (Interior, exterior, both)",
         'petHair': "Is there any pet hair that we should worry about? (Yes or no)"
     }
@@ -87,6 +87,13 @@ def main():
     model = initializeChatModel()
     intentModel = initializeClassificationModel()
     intentObject = ""
+    eventObject = { 
+        'summary': None, 
+        'location': None, 
+        'description': None, 
+        'start': None, 
+        'end': None
+    }
 
     while True: 
         # Let user type in their responses
@@ -97,41 +104,42 @@ def main():
         
         # Determine the intent behind the user input
         intentObject = intentModel.generate_content(userInput) 
-        print(f"[intentObject]: This is the intentObject {intentObject}")
+        # print(f"[intentObject]: This is the intentObject {intentObject}")
         print(f"This is the intent Object {intentObject.text} and this is the lower {intentObject.text.lower()}")
 
-        if intentObject.text.lower().strip() == "appointment scheduling": 
-            print("Hello world")
+        # if intentObject.text.lower().strip() == "appointment scheduling" or intentObject.text.lower().strip() == "create": 
+        #     print("Hello world")
 
         # Reset the intent object if the intentObject is not one of the following options
         # if intentObject not in ['create', 'modify', 'delete']: 
         #     intentObject = "" 
 
-        # if intentObject.text.lower() == 'appointment scheduling':
-        #     print("I have triggered the create conditional")
-        #     # Extract or prompt for missing information
-        #     for field in eventObject:
-        #         if not eventObject[field]:
-        #             # Generate a prompt to ask for missing information
-        #             prompt = generate_prompt(field)
-        #             print(f"[Teni]: {prompt}")
-        #             userInput = input("[You]: ")
-        #             eventObject[field] = model.generate_content(userInput).text.strip()
+        if intentObject.text.lower().strip() == "appointment scheduling" or intentObject.text.lower().strip() == "create": 
+            print("I have triggered the create conditional")
+            # Extract or prompt for missing information
+            for field in eventObject:
+                if not eventObject[field]:
+                    # Generate a prompt to ask for missing information
+                    prompt = generate_prompt(field)
+                    print(f"[Teni]: {prompt}")
+                    userInput = input("[You]: ")
+                    eventObject[field] = model.generate_content(userInput).text.strip()
 
-        #     # Call the function to create the event object
-        #     object = createEventObject(
-        #         eventObject['carModel'],
-        #         eventObject['location'],
-        #         eventObject['cleanType'],
-        #         eventObject['dayPref']
-        #     )
+            # Call the function to create the event object
+            object = createEventObject(
+                eventObject['summary'],
+                eventObject['location'],
+                eventObject['description'],
+                eventObject['start'], 
+                eventObject['end']
+            )
 
-        #     addEvent(object)
-        #     print("[Teni]: Your event has been created successfully!")
+            addEvent(object)
+            print("[Teni]: Your event has been created successfully!")
 
-        #     # Reset the intent and event object after creating the event
-        #     intentObject = ""
-        #     eventObject = {key: None for key in eventObject}
+            # Reset the intent and event object after creating the event
+            intentObject = ""
+            eventObject = {key: None for key in eventObject}
 
 
         # Display the generated response
@@ -140,4 +148,5 @@ def main():
         
     
 if __name__ == "__main__": 
-    main()
+    # main()
+    proto1()
