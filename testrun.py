@@ -1,6 +1,7 @@
 from eventService import * 
 from emailService import * 
 from classify import *
+from dateutil import parser
 import datetime
 from app import initializeChatModel, initializeClassificationModel
 
@@ -180,9 +181,23 @@ def proto1():
                     # invoke the user to input the missing information
                     userInput = input("[You]: ")
                     
+                    if field == 'start': 
+                        try: 
+                            startTime = parser.parse(userInput)
+                            print(startTime)
+                            eventObject['start'] = startTime
+
+                        except (ValueError, TypeError): 
+                            print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
+                            continue
+                    
                     #* thoughts about using another LLM prompt to extract the information and pack event object
-                
-                    # eventObject[field] = extractedData
+
+                    else: 
+                        # eventObject[field] = extractedData
+                        eventObject[field] = userInput
+
+                print(f'This is the current values of eventObject {eventObject}')
             
             # Goes through all of the eventObject values to determine if all values are valid, true, [not None]
             if all(eventObject.values()):         
@@ -197,6 +212,9 @@ def proto1():
                 addEvent(confirmationObject)
 
                 # we expect to see a [createEventObject] and [addEvent] message(s) here
+
+                print("[Teni]: You have successfully booked your appointment for convert_datetime_object back to natural language")
+                break
 
             # response = model.generate_content(userInput)
             # print(f"[Teni]: {response.text}")
@@ -219,11 +237,10 @@ def generatePrompt(field):
     """
 
     prompts = {
-        'summary': "What is the summary or title of the appointment?",
-        'location': "Where is this appointment going to take place?",
-        'description': "Please provide a brief description of the appointment.",
-        'start': "When does the appointment start? Please specify date and time.",
-        'end': "When does the appointment end? Please specify date and time."
+        'summary': "What is your name and what is the year/make/model of your vehicle?",
+        'location': "Do you need us to come to you or are you able to come to our establishment?",
+        'description': "What kind of wash are you looking for? We have interior, exterior, or you can say both",
+        'start': "What day and time are you lookin for? Please specify the date and time in this format 'September 18 at 12PM'",
     }
 
     return prompts.get(field, "Could you provide more information?")

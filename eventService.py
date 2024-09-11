@@ -3,6 +3,8 @@ from google.oauth2.service_account import Credentials
 # Creates the connection to one of Google's product API (in our case, Google Calendar)
 from googleapiclient.discovery import build 
 
+from datetime import timedelta
+import pytz
 
 from dotenv import load_dotenv
 import os 
@@ -73,8 +75,14 @@ def createEventObject(carType, location, description, start):
         'summary': carType, 
         'location': location,
         'description': description,
-        'start': start,
-        'end': start + 1, 
+        'start': {
+            'dateTime': start.isoformat(), 
+            'timeZone': 'America/Los_Angeles',
+        },
+        'end': {
+            'dateTime': (start + timedelta(hours=1)).isoformat(),
+            'timeZone': 'America/Los_Angeles', 
+        }
     }
 
     print("[createEventObject]: Ran successfully")
