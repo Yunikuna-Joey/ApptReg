@@ -181,6 +181,13 @@ def proto1():
                     # invoke the user to input the missing information
                     userInput = input("[You]: ")
                     
+                    #* parse the userInput in this slot
+                    if field == 'summary': 
+                        try: 
+
+
+
+                    #* Parses the start_time field 
                     if field == 'start': 
                         try: 
                             startTime = parser.parse(userInput)
