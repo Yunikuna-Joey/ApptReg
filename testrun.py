@@ -8,15 +8,15 @@ from app import initializeChatModel, initializeClassificationModel
 def testRun(): 
     eventObject = createEventObject()
     addEvent(eventObject)
-    messageObject = createConfirmationMessage()
-    sendEmail(messageObject, os.getenv('TEST_USER'))
-    displayAllEvents()
-    print("Hello world")
-    newStartTime = datetime.datetime(2024, 9, 1, 14, 0) # September 1 2024, 2:00 PM
-    newEndTime = datetime.datetime(2024, 9, 1, 15, 0)   # September 1 2024, 3:00 PM
-    editEvent("flq1ho9lfpan7ugr1mgjtedadk", newStartTime, newEndTime)
-    createDeleteConfirmationMessage(os.getenv('TEST_USER'))
-    createEditConfirmationMessage(os.getenv('TEST_USER'))
+    # messageObject = createConfirmationMessage()
+    # sendEmail(messageObject, os.getenv('TEST_USER'))
+    # displayAllEvents()
+    # print("Hello world")
+    # newStartTime = datetime.datetime(2024, 9, 1, 14, 0) # September 1 2024, 2:00 PM
+    # newEndTime = datetime.datetime(2024, 9, 1, 15, 0)   # September 1 2024, 3:00 PM
+    # editEvent("flq1ho9lfpan7ugr1mgjtedadk", newStartTime, newEndTime)
+    # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
+    # createEditConfirmationMessage(os.getenv('TEST_USER'))
 
 def run1(): 
     print("Initializing the chat")
@@ -150,11 +150,15 @@ def proto1():
     intentModel = initializeClassificationModel() 
     intentObject = ""
     eventObject = { 
-        'summary': None, 
+        'name': None,
+        'number': None,
+        'email': None,
+        'carModel': None, 
         'location': None, 
         'description': None, 
         'start': None, 
     }
+    descriptionObject = ""
 
     while True: 
         userInput = input("[You]: ")
@@ -181,16 +185,6 @@ def proto1():
                     # invoke the user to input the missing information
                     userInput = input("[You]: ")
                     
-                    # #* parse the userInput in this slot
-                    if field == 'summary': 
-                        try: 
-                            print('Hello World')
-
-                        except (ValueError, TypeError): 
-                            print("[Teni]: I apologize. I didn't quite understand that. Please enter your name and the vehicle year make and model.")
-                
-
-
                     #* Parses the start_time field 
                     if field == 'start': 
                         try: 
@@ -204,9 +198,8 @@ def proto1():
                     
                     #* thoughts about using another LLM prompt to extract the information and pack event object
 
-                    else: 
-                        # eventObject[field] = extractedData
-                        eventObject[field] = userInput
+                    else:  
+                        eventObject[field] = userInput.strip()
 
                 print(f'This is the current values of eventObject {eventObject}')
             
@@ -239,7 +232,8 @@ def proto1():
             print(f"[Teni]: {response.text}")
             print(f"This is intentObject after resetting the value. {intentObject}")
 
-               
+
+# This function allows for question prompting the end user based on the information that we need 
 def generatePrompt(field): 
     """ 
         This will allow for customization of different questions that can be asked 
@@ -248,20 +242,13 @@ def generatePrompt(field):
     """
 
     prompts = {
-        'summary': "What is your name and what is the year/make/model of your vehicle?",
+        'name': "What is your name?",
+        'number': "What is your phone number?",
+        'email': "What is your email address?",
+        'carModel': "What is the year/make/model of your vehicle?", 
         'location': "Do you need us to come to you or are you able to come to our establishment?",
         'description': "What kind of wash are you looking for? We have interior, exterior, or you can say both",
         'start': "What day and time are you lookin for? Please specify the date and time in this format 'September 18 at 12PM'",
     }
 
     return prompts.get(field, "Could you provide more information?")
-
-#* Not sure if we will utilize this function yet... 
-def extractInformation(model, userInput, field): 
-    response = model.generate_content(userInput)
-
-    #* might want some kind of action that will pack the eventObject data
-
-    # extracted information 
-    data = response.text.strip()
-    return data

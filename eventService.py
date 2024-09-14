@@ -40,53 +40,53 @@ def displayAllEvents():
     except: 
         print(f"[displayAllEvents]: There was an error displaying all the events in this calendar.")
 
-# def createEventObject(): 
-#     # an Event object must have 
-#     # Title | Summary
-#     # Location 
-#     # Description | Type of wash [interior, exterior, both]
-#     # startTime | start
-#     # endTime | end 
-#     # customer | attendees
-#     eventObject = {
-#         'summary': '2006 Acura RSX', 
-#         'location': 'insert_address_here', 
-#         'description': 'Interior & Exterior Cleaning', 
-#         'start' : { 
-#             'dateTime': '2024-09-02T10:00:00-07:00',
-#             'timeZone': 'America/Los_Angeles',
-#         }, 
-#         'end': { 
-#             'dateTime': '2024-09-02T11:00:00-07:00',
-#             'timeZone': 'America/Los_Angeles',
-#         }, 
-
-#         # 'attendees': [
-#         #     {'email': 'attendee1@example.com'},
-#         #     {'email': 'attendee2@example.com'},
-#         # ],
-#     }
-
-#     print("[createEventObject]: Ran successsfully")
-#     return eventObject
-    
-def createEventObject(carType, location, description, start):
-    eventObject = { 
-        'summary': carType, 
-        'location': location,
-        'description': description,
-        'start': {
-            'dateTime': start.isoformat(), 
+def createEventObject(): 
+    # an Event object must have 
+    # Title | Summary
+    # Location 
+    # Description | Type of wash [interior, exterior, both]
+    # startTime | start
+    # endTime | end 
+    # customer | attendees
+    eventObject = {
+        'summary': '2006 Acura RSX', 
+        'location': 'insert_address_here', 
+        'description': 'Interior & Exterior Cleaning', 
+        'start' : { 
+            'dateTime': '2024-09-22T10:00:00-07:00',
             'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-            'dateTime': (start + timedelta(hours=1)).isoformat(),
-            'timeZone': 'America/Los_Angeles', 
-        }
+        }, 
+        'end': { 
+            'dateTime': '2024-09-22T11:00:00-07:00',
+            'timeZone': 'America/Los_Angeles',
+        }, 
+
+        # 'attendees': [
+        #     {'email': 'attendee1@example.com'},
+        #     {'email': 'attendee2@example.com'},
+        # ],
     }
 
-    print("[createEventObject]: Ran successfully")
+    print("[createEventObject]: Ran successsfully")
     return eventObject
+    
+# def createEventObject(carType, location, description, start):
+#     eventObject = { 
+#         'summary': carType, 
+#         'location': location,
+#         'description': description,
+#         'start': {
+#             'dateTime': start.isoformat(), 
+#             'timeZone': 'America/Los_Angeles',
+#         },
+#         'end': {
+#             'dateTime': (start + timedelta(hours=1)).isoformat(),
+#             'timeZone': 'America/Los_Angeles', 
+#         }
+#     }
+
+#     print("[createEventObject]: Ran successfully")
+#     return eventObject
 
 #* Adds the event object into company calendar
 def addEvent(eventObject): 

@@ -148,5 +148,18 @@ def main():
         
     
 if __name__ == "__main__": 
+    """
+        The event object should visually look like 
+            Customer Name
+            Date/time of the appointment
+            Address 
+            Description ==> Type of wash  
+                            Year/Make/Model  
+                            Phone Number 
+                            Email address 
+    """
     # main()
-    proto1()
+    testRun()
+    # proto1()
+
+
