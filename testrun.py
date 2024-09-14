@@ -181,10 +181,14 @@ def proto1():
                     # invoke the user to input the missing information
                     userInput = input("[You]: ")
                     
-                    #* parse the userInput in this slot
+                    # #* parse the userInput in this slot
                     if field == 'summary': 
                         try: 
+                            print('Hello World')
 
+                        except (ValueError, TypeError): 
+                            print("[Teni]: I apologize. I didn't quite understand that. Please enter your name and the vehicle year make and model.")
+                
 
 
                     #* Parses the start_time field 
