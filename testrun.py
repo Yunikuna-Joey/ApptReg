@@ -1,6 +1,6 @@
-from eventService import * 
-from emailService import * 
-from helper import *
+from eventService import createEventObject, addEvent 
+from emailService import createConfirmationMessage, sendEmail
+from helper import convertDateTime 
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
 
@@ -17,62 +17,7 @@ def testRun():
     # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
     # createEditConfirmationMessage(os.getenv('TEST_USER'))
 
-def run3(): 
-    print("Initializing the chat")
-    intent = ""
-    model = initializeChatModel()
-    event_info = {}  # Dictionary to store event details
-
-    while True:
-        # Register user input
-        userInput = input("[You]: ")
-
-        # Exit condition
-        if userInput.lower() in ["exit", "quit", "stop"]:
-            print("[Ten]: Ending the conversation, Goodbye!")
-            break
-
-        # Let the LLM determine the intent and respond accordingly
-        if not intent:
-            response = model.generate_content(f"User said: '{userInput}'. What does the user want to do?")
-            intent = response.text  # Capture intent from the LLM response
-
-        if intent == "schedule an appointment":
-            # Prompt for missing event information
-            if 'summary' not in event_info:
-                event_info['summary'] = input("[Ten]: What is the title of the event?")
-            if 'location' not in event_info:
-                event_info['location'] = input("[Ten]: Where is the event location?")
-            if 'description' not in event_info:
-                event_info['description'] = input("[Ten]: Please provide a description of the event.")
-            if 'start' not in event_info:
-                start_time = input("[Ten]: When does the event start? (format: YYYY-MM-DDTHH:MM:SS)")
-                event_info['start'] = {
-                    'dateTime': start_time,
-                    'timeZone': 'America/Los_Angeles',  # Adjust timezone as needed
-                }
-            if 'end' not in event_info:
-                end_time = input("[Ten]: When does the event end? (format: YYYY-MM-DDTHH:MM:SS)")
-                event_info['end'] = {
-                    'dateTime': end_time,
-                    'timeZone': 'America/Los_Angeles',  # Adjust timezone as needed
-                }
-
-            # Check if all information is gathered
-            if all(key in event_info for key in ['summary', 'location', 'description', 'start', 'end']):
-                # Create the event object and add it to the calendar
-                try:
-                    addEvent(event_info)
-                    print("[Ten]: Your appointment has been scheduled successfully.")
-                    intent = ""  # Reset intent after scheduling
-                    event_info = {}  # Reset event information for the next interaction
-                except Exception as e:
-                    print(f"[Ten]: There was an error scheduling your appointment: {e}")
-        else:
-            # Continue with the regular chatbot response
-            tenResponse = model.generate_content(userInput)
-            print(f"[Bot]: {tenResponse.text}")
-
+# successful addition to the calendar run 
 def proto1(): 
     print('Initializing the chat')
     
@@ -170,7 +115,7 @@ def proto1():
             print(f"[Teni]: {response.text}")
             print(f"This is intentObject after resetting the value. {intentObject}")
 
-
+# testing the time object (datetime type) within our confirmation message creation 
 def testTime(): 
     print("Initializing the chat")
     userInput = input("[You]: ")
@@ -179,6 +124,7 @@ def testTime():
     msg = createConfirmationMessage("Joey", "vehicle information", "address", "interior", time)
 
     print(msg)
+
 # This function allows for question prompting the end user based on the information that we need 
 def generatePrompt(field): 
     """ 

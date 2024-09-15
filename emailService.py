@@ -51,7 +51,7 @@ def createConfirmationMessageExample():
 
     print("[createMessageHeader]: Message object created successfully.")
 
-#     return message
+# return message
 def createConfirmationMessage(customerName, vehicleInfo, address, cleanType, startTime): 
     #* setup MIME 
     message = MIMEMultipart()

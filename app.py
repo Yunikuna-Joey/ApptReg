@@ -3,7 +3,6 @@ from emailService import *
 from eventService import * 
 from helper import *
 from testrun import *
-import datetime 
 
 from dotenv import load_dotenv
 import os 
