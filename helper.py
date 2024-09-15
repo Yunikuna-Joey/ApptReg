@@ -4,6 +4,7 @@
 from datetime import timedelta
 
 def convertDateTime(dateTimeObject): 
+    # this looks like 'September 15, 2024 at 6:00AM'
     formattedTime = dateTimeObject.strftime("%B %d, %Y at %-I:%M %p")
 
     endTime = dateTimeObject + timedelta(hours=1)

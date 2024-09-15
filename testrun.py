@@ -171,6 +171,14 @@ def proto1():
             print(f"This is intentObject after resetting the value. {intentObject}")
 
 
+def testTime(): 
+    print("Initializing the chat")
+    userInput = input("[You]: ")
+
+    time = parser.parse(userInput)
+    msg = createConfirmationMessage("Joey", "vehicle information", "address", "interior", time)
+
+    print(msg)
 # This function allows for question prompting the end user based on the information that we need 
 def generatePrompt(field): 
     """ 

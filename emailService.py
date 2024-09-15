@@ -70,8 +70,7 @@ def createConfirmationMessage(customerName, vehicleInfo, address, cleanType, sta
     - Car: {vehicleInfo}
     - **Location**: {address} 
     - **Type of Cleaning**: {cleanType}
-    - **Start Time**: {convertDateTime(startTime)} 
-    - **End Time**: {convertDateTime((startTime + timedelta(hours=1)))}
+    - **Time**: {convertDateTime(startTime)} 
 
     Feel free to add this event in your Google Calendar automatically by clicking the .ics file.
 
