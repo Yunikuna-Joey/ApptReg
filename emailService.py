@@ -2,6 +2,9 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from helper import convertDateTime
+from datetime import timedelta
+
 from dotenv import load_dotenv
 load_dotenv()
 import os
@@ -13,7 +16,7 @@ smtp_username = os.getenv('EMAIL_CRED')
 smtp_password = os.getenv('PASSWORD_CRED')
 
 # Format the confirmation message object [need to add in the .ics file attached to the message]
-def createConfirmationMessage(): 
+def createConfirmationMessageExample(): 
     #* setup MIME 
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
@@ -33,6 +36,42 @@ def createConfirmationMessage():
     - **Type of Cleaning**: Interior, exterior, both
     - **Start Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
     - **End Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
+
+    Feel free to add this event in your Google Calendar automatically by clicking the .ics file.
+
+    Best regards,
+    Ten (Just an AutoBot)
+
+    Do not reply back to this message, inbox is unmonitored.
+
+    """
+
+    # convert message to plain text
+    message.attach(MIMEText(body, 'plain'))
+
+    print("[createMessageHeader]: Message object created successfully.")
+
+#     return message
+def createConfirmationMessage(customerName, vehicleInfo, address, cleanType, startTime): 
+    #* setup MIME 
+    message = MIMEMultipart()
+    # setup to, from, and subject line portion of the email
+    message['From'] = smtp_username
+    message['To'] = os.getenv('TEST_USER') # swap this to recipient user email
+    message['Subject'] = "Appointment Confirmation"
+
+    #* Message content
+    body = f""" 
+    Hello {customerName}, 
+
+    This message is a confirmation of your car detailing appointment. 
+
+    Details: 
+    - Car: {vehicleInfo}
+    - **Location**: {address} 
+    - **Type of Cleaning**: {cleanType}
+    - **Start Time**: {convertDateTime(startTime)} 
+    - **End Time**: {convertDateTime((startTime + timedelta(hours=1)))}
 
     Feel free to add this event in your Google Calendar automatically by clicking the .ics file.
 

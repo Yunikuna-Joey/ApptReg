@@ -1,8 +1,7 @@
 from eventService import * 
 from emailService import * 
-from classify import *
+from helper import *
 from dateutil import parser
-import datetime
 from app import initializeChatModel, initializeClassificationModel
 
 def testRun(): 
@@ -17,75 +16,6 @@ def testRun():
     # editEvent("flq1ho9lfpan7ugr1mgjtedadk", newStartTime, newEndTime)
     # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
     # createEditConfirmationMessage(os.getenv('TEST_USER'))
-
-def run1(): 
-    print("Initializing the chat")
-
-    model = initializeChatModel()
-    intentModel = initializeClassificationModel()
-    intentObject = ""
-
-    while True: 
-        # Register user input 
-        userInput = input("[You]: ")
-        
-        # Exit conditions
-        if userInput.lower() in ["exit", "quit", "stop"]: 
-            print("[Ten]: Ending the conversation, Goodbye!")
-            break
-
-        # determine if user has declared some intent
-        if not intentObject:
-            intentObject = classifyUserAction(intentModel, userInput)
-
-        # invoke a response from the chat model
-        tenResponse = model.generate_content(userInput)
-
-        # This is the actual bot reponse to the user input
-        print(f"[Ten]: {tenResponse.text}")
-
-def run2(): 
-    print("Initializing the chat")
-    model = initializeChatModel()
-    intentModel = initializeClassificationModel()
-    intentObject = ""
-
-    while True: 
-        # Register user input 
-        userInput = input("[You]: ")
-
-        # Enhance the exit conditions
-        if userInput.lower() in ["exit", "quit", "stop"]: 
-            print("[Ten]: Ending the conversation, Goodbye!")
-            break
-
-        # invoke a response from the chat model
-        tenResponse = model.generate_content(userInput)
-
-        # determine if user has declared some intent
-        if not intentObject:
-            intentObject = classifyUserAction(intentModel, userInput)
-            while intentObject == 'create': 
-                print("[Teni]: What address is this car located at?")
-                location = input("[You]: ")
-                print("[Teni]: What day and time are you looking for?")
-                dayPref = input("[You]: ")
-                print("[Teni]: What type of car do you have? (Sedan, Coupe, Truck, SUV... etc)")
-                carType = input("[You]: ")
-                print("[Teni]: What is the year, make, and model of your car?")
-                carModel = input("[You]: ")
-                print("[Teni]: What type of cleaning are you looking for? (Interior, exterior, both)") 
-                cleanType = input("[You]: ")
-                print("[Teni]: Is there any pet hair that we should worry about? (Yes or no)")
-                petHair = input("[You]: ")
-
-                createEventObject(carModel, location, cleanType, dayPref)
-        else:
-            processUserAction(intentObject)
-            # if intentObject: 
-            #     processUserAction(intentObject)
-
-        print(f"[Bot]: {tenResponse.text}")
 
 def run3(): 
     print("Initializing the chat")
@@ -190,6 +120,8 @@ def proto1():
                         try: 
                             startTime = parser.parse(userInput)
                             print(startTime)
+                            # going to need a check to determine if the time slot is available, otherwise, print out the available times
+                            # in lieu of customer initial time request
                             eventObject['start'] = startTime
 
                         except (ValueError, TypeError): 
@@ -204,20 +136,26 @@ def proto1():
                 print(f'This is the current values of eventObject {eventObject}')
             
             # Goes through all of the eventObject values to determine if all values are valid, true, [not None]
-            if all(eventObject.values()):         
+            if all(eventObject.values()):  
+                descriptionObject += eventObject['description'] + "\n" + eventObject['carModel'] +  "\n" + eventObject['number'] + "\n" + eventObject['email']       
+                
                 # pack the eventObject 
                 confirmationObject = createEventObject(
-                    eventObject['summary'], 
+                    eventObject['name'], 
                     eventObject['location'], 
-                    eventObject['description'], 
+                    descriptionObject, 
                     eventObject['start']
                 )
                 # This will create the actual calendar event in the backend 
                 addEvent(confirmationObject)
 
+                # we will need to send a confirmation email to the customer after adding the event into google calendar
+                confirmationMsg = createConfirmationMessage(eventObject['name'], eventObject['carModel'], eventObject['location'], eventObject['description'], eventObject['start'])
+                sendEmail(confirmationMsg, eventObject['email'])
+
                 # we expect to see a [createEventObject] and [addEvent] message(s) here
 
-                print("[Teni]: You have successfully booked your appointment for convert_datetime_object back to natural language")
+                print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
                 break
 
             # response = model.generate_content(userInput)

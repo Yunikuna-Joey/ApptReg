@@ -1,7 +1,7 @@
 #* Emailing purposes
 from emailService import * 
 from eventService import * 
-from classify import *
+from helper import *
 from testrun import *
 import datetime 
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
                             Email address 
     """
     # main()
-    testRun()
-    # proto1()
+    # testRun()
+    proto1()
 
 

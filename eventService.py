@@ -40,7 +40,7 @@ def displayAllEvents():
     except: 
         print(f"[displayAllEvents]: There was an error displaying all the events in this calendar.")
 
-def createEventObject(): 
+def createEventObjectExample(): 
     # an Event object must have 
     # Title | Summary
     # Location 
@@ -70,27 +70,28 @@ def createEventObject():
     print("[createEventObject]: Ran successsfully")
     return eventObject
     
-# def createEventObject(carType, location, description, start):
-#     eventObject = { 
-#         'summary': carType, 
-#         'location': location,
-#         'description': description,
-#         'start': {
-#             'dateTime': start.isoformat(), 
-#             'timeZone': 'America/Los_Angeles',
-#         },
-#         'end': {
-#             'dateTime': (start + timedelta(hours=1)).isoformat(),
-#             'timeZone': 'America/Los_Angeles', 
-#         }
-#     }
+def createEventObject(carType, location, description, start):
+    print(f'This is start time in isoformat {start.isoformat()}')
+    eventObject = { 
+        'summary': carType, 
+        'location': location,
+        'description': description,
+        'start': {
+            'dateTime': start.isoformat(), 
+            'timeZone': 'America/Los_Angeles',
+        },
+        'end': {
+            'dateTime': (start + timedelta(hours=1)).isoformat(),
+            'timeZone': 'America/Los_Angeles', 
+        }
+    }
 
-#     print("[createEventObject]: Ran successfully")
-#     return eventObject
+    print("[createEventObject]: Ran successfully")
+    return eventObject
 
 #* Adds the event object into company calendar
 def addEvent(eventObject): 
-    try: 
+    try:    
         calendarService = initializeCalendarService()
         # add the event into the company calendar
         event = calendarService.events().insert(calendarId=TARGET_CALENDAR_ID, body=eventObject).execute()
