@@ -66,18 +66,23 @@ def example():
     print(response.text)
 
 #* Potential helper function
-def generate_prompt(field):
+def generatePrompt(field): 
+    """ 
+        This will allow for customization of different questions that can be asked 
+        to fill in for the missing (necessary) information to pack the 
+        event object 
     """
-    Generate a custom prompt based on the missing field.
-    """
+
     prompts = {
-        'summary': "What address is this car located at?",
-        'location': "What day and time are you looking for?",
-        'description': "What type of car do you have? (Sedan, Coupe, Truck, SUV... etc)",
-        'start': "What is the year, make, and model of your car?",
-        'cleanType': "What type of cleaning are you looking for? (Interior, exterior, both)",
-        'petHair': "Is there any pet hair that we should worry about? (Yes or no)"
+        'name': "What is your name?",
+        'number': "What is your phone number?",
+        'email': "What is your email address?",
+        'carModel': "What is the year/make/model of your vehicle?", 
+        'location': "Do you need us to come to you or are you able to come to our establishment?",
+        'description': "What kind of wash are you looking for? We have interior, exterior, or you can say both",
+        'start': "What day and time are you lookin for? Please specify the date and time in this format 'September 18 at 12PM'",
     }
+
     return prompts.get(field, "Could you provide more information?")
 
 def main(): 
@@ -119,7 +124,7 @@ def main():
             for field in eventObject:
                 if not eventObject[field]:
                     # Generate a prompt to ask for missing information
-                    prompt = generate_prompt(field)
+                    prompt = generatePrompt(field)
                     print(f"[Teni]: {prompt}")
                     userInput = input("[You]: ")
                     eventObject[field] = model.generate_content(userInput).text.strip()
@@ -160,6 +165,7 @@ if __name__ == "__main__":
     # main()
     # testRun()
     proto1()
+    # displayAllEvents()
     # testTime()
 
 

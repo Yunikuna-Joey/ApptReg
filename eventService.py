@@ -27,7 +27,7 @@ def displayAllEvents():
     try: 
         calendarService = initializeCalendarService()
         resultList = calendarService.events().list(calendarId=TARGET_CALENDAR_ID, maxResults=10, singleEvents=True, orderBy='startTime').execute()
-        print(f"This is resultList {resultList}")
+        # print(f"This is resultList {resultList}")
         eventList = resultList.get('items', [])
         print(f"This is eventList {eventList}")
 
@@ -39,6 +39,14 @@ def displayAllEvents():
     
     except: 
         print(f"[displayAllEvents]: There was an error displaying all the events in this calendar.")
+
+def populateEventList(): 
+    try: 
+        calendarService = initializeCalendarService() 
+        resultList = calendarService.events().list(calendarId=TARGET_CALENDAR_ID, maxResults=10, singleEvents=True, orderBy='startTime').execute()
+    
+    except: 
+        print(f"")
 
 def createEventObjectExample(): 
     # an Event object must have 

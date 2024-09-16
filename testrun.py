@@ -1,3 +1,6 @@
+""" 
+    This is going to hold some code runs of different scenarios
+"""
 from eventService import createEventObject, addEvent 
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime 
@@ -65,8 +68,15 @@ def proto1():
                         try: 
                             startTime = parser.parse(userInput)
                             print(startTime)
+
                             # going to need a check to determine if the time slot is available, otherwise, print out the available times
                             # in lieu of customer initial time request
+                            
+                            #* gather all of the events
+                            #* check if the startTime is available
+                            #* if not, then prompt the user to grab another time
+                            
+
                             eventObject['start'] = startTime
 
                         except (ValueError, TypeError): 
