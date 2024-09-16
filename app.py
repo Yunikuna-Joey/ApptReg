@@ -164,8 +164,10 @@ if __name__ == "__main__":
     """
     # main()
     # testRun()
-    proto1()
+    # proto1()
     # displayAllEvents()
+    # displayCurrWeekEvents()
+    displayWeekendEvents()
     # testTime()
 
 

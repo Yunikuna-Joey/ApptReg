@@ -3,7 +3,7 @@ from google.oauth2.service_account import Credentials
 # Creates the connection to one of Google's product API (in our case, Google Calendar)
 from googleapiclient.discovery import build 
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import pytz
 
 from dotenv import load_dotenv
@@ -23,6 +23,7 @@ def initializeCalendarService():
 #* Specify the calendarId (which calendar) to modify | schedule appointments on 
 TARGET_CALENDAR_ID = os.getenv('CALENDAR_ID')
 
+#* potentially necessary for determining eventID 
 def displayAllEvents(): 
     try: 
         calendarService = initializeCalendarService()
@@ -40,13 +41,111 @@ def displayAllEvents():
     except: 
         print(f"[displayAllEvents]: There was an error displaying all the events in this calendar.")
 
+def displayCurrWeekEvents():
+    try: 
+        # Initialize the Calendar Service
+        calendarService = initializeCalendarService()
+        
+        # current time of function invoke
+        now = datetime.now()
+
+        # determine the start of week [day] and end of week [day]
+        start_of_week = now - timedelta(days=now.weekday())  # Monday
+        end_of_week = start_of_week + timedelta(days=6, hours=23, minutes=59)  # Sunday, end of day
+
+        # Convert to ISO format for the API
+        timeMin = start_of_week.isoformat() + 'Z'  # Z indicates UTC time
+        timeMax = end_of_week.isoformat() + 'Z'
+
+        # create list with desired parameters
+        resultList = calendarService.events().list(
+            calendarId=TARGET_CALENDAR_ID,
+            timeMin=timeMin,
+            timeMax=timeMax,
+            maxResults=10,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        eventList = resultList.get('items', [])
+        
+        if not eventList: 
+            print("[displayWeekEvents]: No events found for this week.")
+        
+        # Display the events
+        for event in eventList: 
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            print(f"[displayWeekEvents]: Event: {event['summary']}, Start: {start}, ID: {event['id']}")
+    
+    except Exception as e: 
+        print(f"[displayWeekEvents]: There was an error displaying the events for the week: {e}")
+
+# grabs all of the weekend events within a current month
+def displayWeekendEvents():
+    try:
+        # Initialize the Calendar Service
+        calendarService = initializeCalendarService()
+
+        now = datetime.now()
+        # print(f"this is the value of now {now}")
+
+        # find the first day of current month and last day of current month
+        start_of_month = now.replace(day=1)  # First day of the month
+        # print(f"this is start of month {start_of_month}")
+
+        # Calculate the first day of the next month, then subtract 1 second to get the last day of this month
+        end_of_month = (start_of_month.replace(month=start_of_month.month % 12 + 1, day=1) - timedelta(seconds=1))
+        # print(f"this is end of month {end_of_month}")
+
+        # Convert to ISO format for the API with timezone information
+        timeMin = start_of_month.isoformat() + 'Z'
+        timeMax = end_of_month.isoformat() + 'Z'
+
+        # populate the list 
+        resultList = calendarService.events().list(
+            calendarId=TARGET_CALENDAR_ID,
+            timeMin=timeMin,
+            timeMax=timeMax,
+            maxResults=100,  # Fetch more events to cover the entire month
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        eventList = resultList.get('items', [])
+        
+        if not eventList:
+            print("[displayWeekendEvents]: No events found for this month.")
+
+        # Display only weekend events (Saturday and Sunday)
+        for event in eventList:
+            # Get the event's start time as a datetime object
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            event_start_datetime = datetime.fromisoformat(start)
+
+            # Check if the event falls on a weekend (Saturday = 5, Sunday = 6)
+            if event_start_datetime.weekday() in [5, 6]:
+                print(f"[displayWeekendEvents]: Event: {event['summary']}, Start: {start}, ID: {event['id']}")
+    
+    except Exception as e:
+        print(f"[displayWeekendEvents]: There was an error displaying the weekend events: {e}")
+
+#* need a time constraint to only display the available times *this* week  
 def populateEventList(): 
     try: 
         calendarService = initializeCalendarService() 
         resultList = calendarService.events().list(calendarId=TARGET_CALENDAR_ID, maxResults=10, singleEvents=True, orderBy='startTime').execute()
+        eventList = resultList.get('items', [])
+
+        if not eventList: 
+            print("All timeslots are available")
+        
+        for event in eventList: 
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            print(f"[displayAllEvents_Try]: Event: {event['summary']}, Start: {start}, ID: {event['id']}")
+
     
     except: 
-        print(f"")
+        print(f"[populateEventList]: There was an error with gathering the list of all events in the calendar")
 
 def createEventObjectExample(): 
     # an Event object must have 
