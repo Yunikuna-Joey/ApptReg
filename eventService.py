@@ -334,3 +334,38 @@ def editEvent(eventId, newStartTime, newEndTime):
 
     except Exception as e: 
         print(f"[editEvent]: An error occurred-- {e}")
+
+#* Function is working as intended
+def checkWeekendCondition(datetimeObject): 
+    try:
+        if datetimeObject.weekday() in [5, 6]: 
+            # print("True")
+            return True
+
+        # print("False")
+        return False 
+    
+    except Exception as e: 
+        print(f"Enter a valid datetime object {e}")
+
+# def populateEventsForDay(datetimeObject): 
+#     try: 
+#         calendarService = initializeCalendarService()
+#         now = datetime.now()
+
+#         resultList = calendarService.events().list(
+#             calendarId=TARGET_CALENDAR_ID, 
+#             timeMin=timeMin,
+#             timeMax=timeMax,
+#             maxResults=20, 
+#             singleEvents=True, 
+#             orderBy='startTime'
+#         ).execute()
+        
+#         eventList = resultList.get('items', [])
+
+#         if not eventList: 
+#             print(f"[populateEventsForDay]: No events found for today")
+
+#     except Exception as e:
+#         print(f"[populateEventsForDay]: There was an error with gathering events for the day {e}") 

@@ -1,7 +1,7 @@
 """ 
     This is going to hold some code runs of different scenarios
 """
-from eventService import createEventObject, addEvent 
+from eventService import createEventObject, addEvent, checkWeekendCondition
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime 
 from dateutil import parser
@@ -20,7 +20,7 @@ def testRun():
     # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
     # createEditConfirmationMessage(os.getenv('TEST_USER'))
 
-# successful addition to the calendar run 
+# successful run of adding event to calendar
 def proto1(): 
     print('Initializing the chat')
     
@@ -72,9 +72,16 @@ def proto1():
                             # going to need a check to determine if the time slot is available, otherwise, print out the available times
                             # in lieu of customer initial time request
                             
-                            #* gather all of the events
-                            #* check if the startTime is available
-                            #* if not, then prompt the user to grab another time
+                            #* Check if the requested day is a weekend
+                                #* if not prompt the user to choose a different day
+                            while checkWeekendCondition(startTime) == False: 
+                                print(f'[Teni]: Please choose a weekend as we are not taking appointments on weekdays at the moment.')
+                                userInput = input("[You]: ")
+                                startTime = parser.parse(userInput)
+                            
+                            #* if the day is a weekend, 
+                                #* check if the timeslot is available
+                            
                             
 
                             eventObject['start'] = startTime

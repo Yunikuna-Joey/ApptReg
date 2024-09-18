@@ -164,11 +164,17 @@ if __name__ == "__main__":
     """
     # main()
     # testRun()
-    # proto1()
+    proto1()
     # displayAllEvents()
     # displayCurrWeekEvents()
     # displayWeekendEvents()
-    listAvailableTime()
+    # listAvailableTime()
     # testTime()
+
+    # userInput = ""
+    # while userInput not in ['exit', 'quit']:
+    #     userInput = input("Type something: ")
+    #     startTime = parser.parse(userInput)
+    #     checkWeekendCondition(startTime)
 
 
