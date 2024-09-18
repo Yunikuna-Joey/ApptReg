@@ -210,22 +210,22 @@ def listAvailableTime():
                     # split available times around the event
                     newAvailableTimes = []
                     for workStart, workEnd in timeAvailable: 
-                        # if event overlaps the available timeslot, split the slot 
-                        if eventStart <= workStart < eventEnd or workStart < eventStart < workEnd: 
-                            
+                        # If event starts before the workEnd and ends after the workStart, it overlaps
+                        if eventStart <= workEnd and eventEnd >= workStart: 
+                            # If the event starts after the workStart, keep the time before the event
                             if workStart < eventStart: 
-                                newAvailableTimes.append((workStart, eventStart))
+                                #* the timedelta here should be replaced with the type of cleaning [interior/exterior = 1hr, both = 2hr]
+                                newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
                             
+                            # If the event ends before the workEnd, keep the time after the event
                             if eventEnd < workEnd: 
                                 newAvailableTimes.append((eventEnd, workEnd))
-                            
                         else: 
-                            # print(f"This is workStart and workEnd {workStart} {workEnd}")
+                            # No overlap, so keep the original time slot
                             newAvailableTimes.append((workStart, workEnd))
                             
-
                     timeAvailable = newAvailableTimes
-                
+                    
                 availableSlots[currDay.strftime('%Y-%m-%d')] = timeAvailable
             
             # move to the next day
@@ -239,7 +239,7 @@ def listAvailableTime():
                 print('\n')
             
             else: 
-                print(f"No available times on {date}")
+                print(f"No available times on {date}\n")
 
     except Exception as e: 
         print(f"[listAvailableTimes]: There was an error displaying the available weekend times {e}") 
