@@ -167,7 +167,8 @@ if __name__ == "__main__":
     # proto1()
     # displayAllEvents()
     # displayCurrWeekEvents()
-    displayWeekendEvents()
+    # displayWeekendEvents()
+    listAvailableTime()
     # testTime()
 
 
