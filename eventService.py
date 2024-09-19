@@ -4,6 +4,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build 
 
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 import pytz
 
 from dotenv import load_dotenv
@@ -348,32 +349,57 @@ def checkWeekendCondition(datetimeObject):
     except Exception as e: 
         print(f"Enter a valid datetime object {e}")
 
-#* This returns a list of all the events going on for the day? 
+#* This returns a list of all the events going on for the day
 def populateEventsForDay(datetimeObject): 
     #* we need to utilize the requested day to determine which day to check
     try: 
         calendarService = initializeCalendarService()
         # now = datetime.now()
 
-        beginWorkHour = datetimeObject.replace(hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
-        endWorkHour = datetimeObject.replace(hour=18, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+        # since we are initially setting the appointment times in America/los_angeles
+        formatTimeZone = ZoneInfo('America/Los_Angeles')
+        # need to format the search query to look within this timezone information
+        localizedTime = datetimeObject.replace(tzinfo=formatTimeZone)
 
+        # print(f"[populateEventsforDay]: This is datetimeObject {datetimeObject}")
+
+        # beginWorkHour = datetimeObject.replace(hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+        # endWorkHour = datetimeObject.replace(hour=18, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+
+        # These variables are now working with the datetime object in america timezone
+        beginWorkHour = localizedTime.replace(hour=8, minute=0, second=0, microsecond=0)
+        endWorkHour = localizedTime.replace(hour=18, minute=0, second=0, microsecond=0)
+
+        # print(f"[populateEventsforDay]: This is beginWorkHour {beginWorkHour}")
+        # print(f"[populateEventsforDay]: This is endWorkHour {endWorkHour}")
+
+        # Format the datetime objects in america timezone into iso format
+        formatBegin = beginWorkHour.isoformat()
+        formatEnd = endWorkHour.isoformat()
+
+        # print(f"[populateEventsforDay]: This is formatBegin {formatBegin}")
+        # print(f"[populateEventsforDay]: This is formatEnd {formatEnd}")
+        
+        # This now looks for all the america timezone events that we added initially 
         resultList = calendarService.events().list(
             calendarId=TARGET_CALENDAR_ID, 
-            timeMin=beginWorkHour,
-            timeMax=endWorkHour,
-            maxResults=20, 
+            timeMin=formatBegin,
+            timeMax=formatEnd, 
             singleEvents=True, 
             orderBy='startTime'
         ).execute()
+
+        # print(f"[populateEventsForDay]: This is result list {resultList}")
         
         eventList = resultList.get('items', [])
 
         if not eventList: 
+            # probably change the response to include which day is 'today'
             print(f"[populateEventsForDay]: No events found for today")
 
-        print(f"[populateEventForDay]: This is the eventList {eventList}")
+        # print(f"[populateEventForDay]: This is the eventList {eventList}")
         
+        # populate the list 
         return eventList
 
     except Exception as e:

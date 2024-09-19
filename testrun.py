@@ -1,7 +1,7 @@
 """ 
     This is going to hold some code runs of different scenarios
 """
-from eventService import createEventObject, addEvent, checkWeekendCondition
+from eventService import createEventObject, addEvent, checkWeekendCondition, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime 
 from dateutil import parser
@@ -83,21 +83,33 @@ def proto1():
                                 #* check if the timeslot is available 
                             """ 
                                 First method to attempt: 
-                                    1) gather all of the events on the requested day
+                                    1) gather all of the events on the requested day [done]
                                     2) convert the requested datetime object into .iso format
                                     3) initialize comparison between requested .iso format and iterate through the gathered events
                                     4) If the timeslot is available, then we can schedule the appointment [pack the eventObject with the requested time]
                                         4a) otherwise, list the available timeslots for that day, dependent on the type of requested service 
                                             [will need to implement the hashmap for service type : time required for service]
                             """
-                            
+                            scheduledEventList = populateEventsForDay(startTime)
+                            for event in scheduledEventList:
+                                # need to determine if this is a valid way of matching the 
+                                # requested startTime and event startTime 
+                                if startTime in event['start']: 
+                                    print(f'[Teni]: Your requested time is not available')
+                                    # now we need a function to display all the other available 
+                                    # start times since the initial request was not fulfilled 
+                                
+                                # if there is no conflict, 
+                                # then we can pack the eventObject with the requested time-frame
+                                else: 
+                                    eventObject['start'] = startTime 
                             
                             
                             
                             
                             
                             #* This means we were able to pass the checks of being the correct day and having a valid timeslot
-                            eventObject['start'] = startTime
+                            # eventObject['start'] = startTime
 
                         except (ValueError, TypeError): 
                             print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
