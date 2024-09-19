@@ -80,10 +80,23 @@ def proto1():
                                 startTime = parser.parse(userInput)
                             
                             #* if the day is a weekend, 
-                                #* check if the timeslot is available
+                                #* check if the timeslot is available 
+                            """ 
+                                First method to attempt: 
+                                    1) gather all of the events on the requested day
+                                    2) convert the requested datetime object into .iso format
+                                    3) initialize comparison between requested .iso format and iterate through the gathered events
+                                    4) If the timeslot is available, then we can schedule the appointment [pack the eventObject with the requested time]
+                                        4a) otherwise, list the available timeslots for that day, dependent on the type of requested service 
+                                            [will need to implement the hashmap for service type : time required for service]
+                            """
                             
                             
-
+                            
+                            
+                            
+                            
+                            #* This means we were able to pass the checks of being the correct day and having a valid timeslot
                             eventObject['start'] = startTime
 
                         except (ValueError, TypeError): 

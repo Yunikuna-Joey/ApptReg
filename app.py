@@ -164,17 +164,23 @@ if __name__ == "__main__":
     """
     # main()
     # testRun()
-    proto1()
+
     # displayAllEvents()
     # displayCurrWeekEvents()
     # displayWeekendEvents()
     # listAvailableTime()
     # testTime()
 
-    # userInput = ""
-    # while userInput not in ['exit', 'quit']:
-    #     userInput = input("Type something: ")
-    #     startTime = parser.parse(userInput)
-    #     checkWeekendCondition(startTime)
+    # proto1()
+
+    userInput = ""
+    while userInput not in ['exit', 'quit']:
+        userInput = input("Type something: ")
+        startTime = parser.parse(userInput)
+        checkWeekendCondition(startTime)
+
+        if checkWeekendCondition(startTime): 
+            finalList = populateEventsForDay(startTime)
+            print(f"[Main Thread]: {finalList}")
 
 

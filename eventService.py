@@ -348,24 +348,33 @@ def checkWeekendCondition(datetimeObject):
     except Exception as e: 
         print(f"Enter a valid datetime object {e}")
 
-# def populateEventsForDay(datetimeObject): 
-#     try: 
-#         calendarService = initializeCalendarService()
-#         now = datetime.now()
+#* This returns a list of all the events going on for the day? 
+def populateEventsForDay(datetimeObject): 
+    #* we need to utilize the requested day to determine which day to check
+    try: 
+        calendarService = initializeCalendarService()
+        # now = datetime.now()
 
-#         resultList = calendarService.events().list(
-#             calendarId=TARGET_CALENDAR_ID, 
-#             timeMin=timeMin,
-#             timeMax=timeMax,
-#             maxResults=20, 
-#             singleEvents=True, 
-#             orderBy='startTime'
-#         ).execute()
+        beginWorkHour = datetimeObject.replace(hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+        endWorkHour = datetimeObject.replace(hour=18, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+
+        resultList = calendarService.events().list(
+            calendarId=TARGET_CALENDAR_ID, 
+            timeMin=beginWorkHour,
+            timeMax=endWorkHour,
+            maxResults=20, 
+            singleEvents=True, 
+            orderBy='startTime'
+        ).execute()
         
-#         eventList = resultList.get('items', [])
+        eventList = resultList.get('items', [])
 
-#         if not eventList: 
-#             print(f"[populateEventsForDay]: No events found for today")
+        if not eventList: 
+            print(f"[populateEventsForDay]: No events found for today")
 
-#     except Exception as e:
-#         print(f"[populateEventsForDay]: There was an error with gathering events for the day {e}") 
+        print(f"[populateEventForDay]: This is the eventList {eventList}")
+        
+        return eventList
+
+    except Exception as e:
+        print(f"[populateEventsForDay]: There was an error with gathering events for the day {e}") 
