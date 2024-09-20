@@ -1,7 +1,8 @@
 """ 
     This is going to hold some code runs of different scenarios
 """
-from eventService import createEventObject, addEvent, checkWeekendCondition, populateEventsForDay
+from datetime import timezone
+from eventService import createEventObject, addEvent, checkWeekendCondition, listAvailableTime, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime 
 from dateutil import parser
@@ -68,6 +69,7 @@ def proto1():
                         try: 
                             startTime = parser.parse(userInput)
                             print(startTime)
+                            # print(f"This is the start time in iso format {startTime.isoformat().replace(tzinfo=timezone.utc)}")
 
                             # going to need a check to determine if the time slot is available, otherwise, print out the available times
                             # in lieu of customer initial time request
@@ -91,25 +93,29 @@ def proto1():
                                             [will need to implement the hashmap for service type : time required for service]
                             """
                             scheduledEventList = populateEventsForDay(startTime)
+                            # print(f"[Main Thread]: This is scheduledList {scheduledEventList}")
+                            
+                             
                             for event in scheduledEventList:
                                 # need to determine if this is a valid way of matching the 
                                 # requested startTime and event startTime 
-                                if startTime in event['start']: 
+                                print(f"This is eventStart time {event['start']}")
+                                
+                                break
+                                while startTime in event['start']: 
                                     print(f'[Teni]: Your requested time is not available')
                                     # now we need a function to display all the other available 
                                     # start times since the initial request was not fulfilled 
+                                    listAvailableTime(startTime)
+                                    startTime = parser.parse(input("[You]: "))
                                 
                                 # if there is no conflict, 
                                 # then we can pack the eventObject with the requested time-frame
-                                else: 
-                                    eventObject['start'] = startTime 
-                            
-                            
-                            
-                            
+                                # else: 
+                                #     eventObject['start'] = startTime 
                             
                             #* This means we were able to pass the checks of being the correct day and having a valid timeslot
-                            # eventObject['start'] = startTime
+                            eventObject['start'] = startTime
 
                         except (ValueError, TypeError): 
                             print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
@@ -138,7 +144,7 @@ def proto1():
 
                 # we will need to send a confirmation email to the customer after adding the event into google calendar
                 confirmationMsg = createConfirmationMessage(eventObject['name'], eventObject['carModel'], eventObject['location'], eventObject['description'], eventObject['start'])
-                sendEmail(confirmationMsg, eventObject['email'])
+                # sendEmail(confirmationMsg, eventObject['email'])
 
                 # we expect to see a [createEventObject] and [addEvent] message(s) here
 

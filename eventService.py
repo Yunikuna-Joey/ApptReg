@@ -245,6 +245,119 @@ def listAvailableTime():
     except Exception as e: 
         print(f"[listAvailableTimes]: There was an error displaying the available weekend times {e}") 
 
+def listAvailableTime(dateTimeObject): 
+    try: 
+        calendarService = initializeCalendarService()
+
+        # this is a declaration of a datetime object [date & time]
+        # now = datetime.now(timezone.utc)
+        
+
+        # replacing the day parameter of the datetime object with day number 1 [first of the month]
+        startOfMonth = dateTimeObject.replace(day=1)
+
+        # condition to check if we are on december as it requires different logic    
+        if startOfMonth.month == 12: 
+            # if december, then we make the calculation for the next year january 
+            # minus one second to bring us back to the correct last day of december
+            endOfMonth = startOfMonth.replace(year=startOfMonth.year + 1, month=1, day=1) - timedelta(seconds=1)
+        else:
+            endOfMonth = startOfMonth.replace(month=startOfMonth.month + 1, day=1) - timedelta(seconds=1)
+        
+        # declare our constraints of start day of the month and end day of the month 
+        # in isoFormat()
+        timeMin = startOfMonth.isoformat()
+        timeMax = endOfMonth.isoformat() 
+
+        # this will return a dict object back or dict of dict
+        resultList = calendarService.events().list(
+            calendarId=TARGET_CALENDAR_ID,
+            timeMin=timeMin, 
+            timeMax=timeMax,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+
+        # this list just holds all of the event objects within the current constraint
+        # the constraint is currently just the entire 1 month of the time of function invoke
+        eventList = resultList.get('items', [])
+
+        if not eventList: 
+            print("[listAvailableTimes]: There are no events this month")
+        
+        # (8, 20) signifies the hours from 8AM to 8PM  [24 hour format]
+        # workHours = [(8, 20)] 
+        availableSlots = {}
+
+        # Iterating through every day of the current month 
+        # starting from the first day of the current month
+        currDay = startOfMonth
+        while currDay <= endOfMonth: 
+            # if the current day is a weekend [5, 6] representing 
+            # Saturday and Sunday respectively 
+            if currDay.weekday() in [5, 6]: 
+                #*** we are currently iterating through the eventList of event objects each time, but
+                #*** we can make it less taxing by removing the already processed days/event objects
+                #*** to improve performance slightly
+                weekendObjectList = [
+                    # list comprehension to iterate through each event in event list
+                    event for event in eventList
+                    # the condition to only get the events that match the current day we are iterating on
+                    if event['start'].get('dateTime', event['start'].get('date')).startswith(currDay.strftime('%Y-%m-%d'))
+                ]
+
+                # create the startTime and endTime
+                timeStart = currDay.replace(hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                timeEnd = currDay.replace(hour=20, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+
+                # This is essentially representing the company's working hours
+                timeAvailable = [(timeStart, timeEnd)]
+
+                # iterating over all the events that happen to land on a weekend
+                for event in weekendObjectList: 
+                    """ From the event object that we are processing, 
+                    process that specific event object's start and end time(s)
+                    """
+                    eventStart = datetime.fromisoformat(event['start'].get('dateTime').replace("Z", "+00:00"))
+                    eventEnd = datetime.fromisoformat(event['end'].get('dateTime').replace("Z", "+00:00"))
+
+                    # split available times around the event
+                    newAvailableTimes = []
+                    for workStart, workEnd in timeAvailable: 
+                        # If event starts before the workEnd and ends after the workStart, it overlaps
+                        if eventStart <= workEnd and eventEnd >= workStart: 
+                            # If the event starts after the workStart, keep the time before the event
+                            if workStart < eventStart: 
+                                #* the timedelta here should be replaced with the type of cleaning [interior/exterior = 1hr, both = 2hr]
+                                newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
+                            
+                            # If the event ends before the workEnd, keep the time after the event
+                            if eventEnd < workEnd: 
+                                newAvailableTimes.append((eventEnd, workEnd))
+                        else: 
+                            # No overlap, so keep the original time slot
+                            newAvailableTimes.append((workStart, workEnd))
+                            
+                    timeAvailable = newAvailableTimes
+                    
+                availableSlots[currDay.strftime('%Y-%m-%d')] = timeAvailable
+            
+            # move to the next day
+            currDay += timedelta(days=1)
+
+        for date, times in availableSlots.items(): 
+            if times: 
+                print(f"Available times on {date}:")
+                for start, end in times: 
+                    print(f" {start.strftime('%I:%M %p')} - {end.strftime('%I:%M %p')}")
+                print('\n')
+            
+            else: 
+                print(f"No available times on {date}\n")
+
+    except Exception as e: 
+        print(f"[listAvailableTimes]: There was an error displaying the available weekend times {e}") 
+
 def createEventObjectExample(): 
     # an Event object must have 
     # Title | Summary

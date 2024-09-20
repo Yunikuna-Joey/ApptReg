@@ -171,16 +171,16 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    # proto1()
+    proto1()
 
-    userInput = ""
-    while userInput not in ['exit', 'quit']:
-        userInput = input("Type something: ")
-        startTime = parser.parse(userInput)
-        checkWeekendCondition(startTime)
+    # userInput = ""
+    # while userInput not in ['exit', 'quit']:
+    #     userInput = input("Type something: ")
+    #     startTime = parser.parse(userInput)
+    #     checkWeekendCondition(startTime)
 
-        if checkWeekendCondition(startTime): 
-            finalList = populateEventsForDay(startTime)
-            print(f"[Main Thread]: {finalList}")
+    #     if checkWeekendCondition(startTime): 
+    #         finalList = populateEventsForDay(startTime)
+    #         print(f"[Main Thread]: {finalList}")
 
 
