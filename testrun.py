@@ -48,7 +48,6 @@ def proto1():
             print("[Ten]: Ending the conversation, Goodbye!")
             break
             
-
         # classifies whether or not a valid user intention was made [create, modify, delete]
         if not intentObject: 
             intentObject = intentModel.generate_content(userInput)
@@ -67,13 +66,9 @@ def proto1():
                     
                     #* Parses the start_time field 
                     if field == 'start': 
-                        try: 
+                        try:
+                            # convert the user input into a naive datetime object 
                             startTime = parser.parse(userInput)
-                            print(startTime)
-                            # print(f"This is the start time in iso format {startTime.isoformat().replace(tzinfo=timezone.utc)}")
-
-                            # going to need a check to determine if the time slot is available, otherwise, print out the available times
-                            # in lieu of customer initial time request
                             
                             #* Check if the requested day is a weekend
                                 #* if not prompt the user to choose a different day
@@ -93,43 +88,28 @@ def proto1():
                                         4a) otherwise, list the available timeslots for that day, dependent on the type of requested service 
                                             [will need to implement the hashmap for service type : time required for service]
                             """
+
                             scheduledEventList = populateEventsForDay(startTime)
-                            # print(f"[Main Thread]: This is scheduledList {scheduledEventList}")
-                            formatStart = startTime
-                            timeHandle = formatStart.replace(tzinfo=ZoneInfo('America/Los_Angeles'))
-
-                            # print(f"[Main Thread]: This is the value of timeHandle {timeHandle}")
                             
-                             
-                            for event in scheduledEventList:
-                                # need to determine if this is a valid way of matching the 
-                                # requested startTime and event startTime 
-
-                                
-                                # print(f"[Main Thread]: This is the value of timeHandle {timeHandle.isoformat()}")
-                                # print(f"[Main Thread]: This is the value of event[start][dateTime] {event['start']['dateTime']}")
-                                # print(f"This is the condition between checking the timehandle and event thing {timeHandle.isoformat() == event['start']['dateTime']}")
-
-                                while timeHandle.isoformat() == event['start']['dateTime']: 
-                                    print(f'[Teni]: Your requested time is not available')
-                                    # now we need a function to display all the other available 
-                                    # start times since the initial request was not fulfilled 
-                                    listAvailableTime(startTime)
-                                    startTime = parser.parse(input("[You]: "))
-                                
-                                # if there is no conflict, 
-                                # then we can pack the eventObject with the requested time-frame
-                                # else: 
-                                #     eventObject['start'] = startTime 
+                            # modStartTime = startTime
+                            # newStartTime = modStartTime.replace(tzinfo=ZoneInfo('America/Los_Angeles'))
+                            newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
                             
+                            # checks for all the events in
+                            while any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList): 
+                                print(f"[Teni]: Your requested time is not available. Here are the available times")
+                                listAvailableTime(startTime)
+                                print("[Teni]: Please choose another time that works for you")
+                                userInput = input("[You]: ")
+                                startTime = parser.parse(userInput)
+                                newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
+
                             #* This means we were able to pass the checks of being the correct day and having a valid timeslot
                             eventObject['start'] = startTime
-
+                                
                         except (ValueError, TypeError): 
                             print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
                             continue
-                    
-                    #* thoughts about using another LLM prompt to extract the information and pack event object
 
                     else:  
                         eventObject[field] = userInput.strip()
@@ -158,10 +138,6 @@ def proto1():
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
                 break
-
-            # response = model.generate_content(userInput)
-            # print(f"[Teni]: {response.text}")
-            # print('[proto1]: I have triggered a create intention conditional.')
         
         # otherwise, respond back to user as normal [reset the intentObject if a non-valid one was made as well]
         else: 
