@@ -254,7 +254,9 @@ def listAvailableTimeValidMonth():
         # Set the timezone to 'America/Los_Angeles'
         tz_los_angeles = ZoneInfo('America/Los_Angeles')
 
-        currentDayObject = datetime.now(tz=tz_los_angeles)
+        # replacing the current datetime object with information of timezone and setting the time be 1AM [doesn't have to be 1am just some arbitary time that is before the working hours]
+        currentDayObject = datetime.now(tz=tz_los_angeles).replace(hour=1, minute=0, second=0, microsecond=0)
+        print(f"Value of currentDayobject {currentDayObject}")
         
         # Print the dateTimeObject with the assigned timezone for debugging
         print(f"[listAvailableTime]: {currentDayObject}")
@@ -294,7 +296,7 @@ def listAvailableTimeValidMonth():
 
         # Iterating through every day of the current month 
         # starting from the first day of the current month
-        currDay = currentDayObject
+        currDay = startThreshhold
         while currDay <= endOfMonth: 
             # if the current day is a weekend [5, 6] representing 
             # Saturday and Sunday respectively 
@@ -309,9 +311,13 @@ def listAvailableTimeValidMonth():
                     if event['start'].get('dateTime', event['start'].get('date')).startswith(currDay.strftime('%Y-%m-%d'))
                 ]
 
+                # print(f"[listAvailableTimeValidMonth L:312]: This is the weekendObjectList value {weekendObjectList}")
+
                 # create the startTime and endTime
-                timeStart = currDay.replace(hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
-                timeEnd = currDay.replace(hour=20, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                # timeStart = currentDayObject.replace(hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                # timeEnd = currentDayObject.replace(hour=20, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+                timeStart = currDay.replace(hour=8, minute=0, second=0, microsecond=0)
+                timeEnd = currDay.replace(hour=20, minute=0, second=0, microsecond=0)
 
                 # This is essentially representing the company's working hours
                 timeAvailable = [(timeStart, timeEnd)]
@@ -321,8 +327,11 @@ def listAvailableTimeValidMonth():
                     """ From the event object that we are processing, 
                     process that specific event object's start and end time(s)
                     """
-                    eventStart = datetime.fromisoformat(event['start'].get('dateTime').replace("Z", "+00:00"))
-                    eventEnd = datetime.fromisoformat(event['end'].get('dateTime').replace("Z", "+00:00"))
+                    print(f"[event]: eventobject {event}\n")
+                    # eventStart = datetime.fromisoformat(event['start'].get('dateTime').replace("Z", "+00:00"))
+                    # eventEnd = datetime.fromisoformat(event['end'].get('dateTime').replace("Z", "+00:00"))
+                    eventStart = datetime.fromisoformat(event['start'].get('dateTime'))
+                    eventEnd = datetime.fromisoformat(event['end'].get('dateTime'))
 
                     # split available times around the event
                     newAvailableTimes = []
@@ -333,6 +342,7 @@ def listAvailableTimeValidMonth():
                             if workStart < eventStart: 
                                 #* the timedelta here should be replaced with the type of cleaning [interior/exterior = 1hr, both = 2hr]
                                 newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
+                                # newAvailableTimes.append((workStart, eventStart))
                             
                             # If the event ends before the workEnd, keep the time after the event
                             if eventEnd < workEnd: 
