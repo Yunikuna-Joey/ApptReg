@@ -470,6 +470,18 @@ def checkWeekendCondition(datetimeObject):
     except Exception as e: 
         print(f"Enter a valid datetime object {e}")
 
+#* Function to determine whether the requested day is valid [must be current or in the future]
+def checkDayState(datetimeObject): 
+    try: 
+        currentDay = datetime.now()
+        print(f"[function]: This is currentDay {currentDay}")
+        print(f"[function]: This is datetimeObject {datetimeObject}")
+
+        return datetimeObject >= currentDay
+
+    except Exception as e: 
+        print(f"This is not a valid datetime object {e}")
+
 #* This returns a list of all the events going on for the day
 def populateEventsForDay(datetimeObject): 
     #* we need to utilize the requested day to determine which day to check

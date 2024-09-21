@@ -1,9 +1,8 @@
 """ 
     This is going to hold some code runs of different scenarios
 """
-from datetime import timezone
 from zoneinfo import ZoneInfo
-from eventService import createEventObject, addEvent, checkWeekendCondition, listAvailableTime, populateEventsForDay
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTime, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime, resetObjectValues
 from dateutil import parser
@@ -72,12 +71,12 @@ def proto1():
                             
                             #* Check if the requested day is a weekend
                                 #* if not prompt the user to choose a different day
-                            while checkWeekendCondition(startTime) == False: 
+                            while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
                                 print(f'[Teni]: Please choose a weekend as we are not taking appointments on weekdays at the moment.')
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
                             
-                            #* if the day is a weekend, 
+                            #* if the day is a weekend and in the present | future, 
                                 #* check if the timeslot is available 
                             """ 
                                 First method to attempt: 
