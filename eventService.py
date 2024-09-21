@@ -133,12 +133,13 @@ def displayWeekendEvents():
         print(f"[displayWeekendEvents]: There was an error displaying the weekend events: {e}")
 
 #* list all the available timeslots within the work hour [customize to fit]
-def listAvailableTime(): 
+def listAvailableTimeExample(): 
     try: 
         calendarService = initializeCalendarService()
 
         # this is a declaration of a datetime object [date & time]
         now = datetime.now(timezone.utc)
+        print(f"This is the value of now {now}")
 
         # replacing the day parameter of the datetime object with day number 1 [first of the month]
         startOfMonth = now.replace(day=1)
@@ -249,20 +250,27 @@ def listAvailableTime(dateTimeObject):
     try: 
         calendarService = initializeCalendarService()
 
-        # this is a declaration of a datetime object [date & time]
-        # now = datetime.now(timezone.utc)
+        # Set the timezone to 'America/Los_Angeles'
+        tz_los_angeles = ZoneInfo('America/Los_Angeles')
         
+        # Print the dateTimeObject with the assigned timezone for debugging
+        print(f"[listAvailableTime]: {dateTimeObject}")
 
-        # replacing the day parameter of the datetime object with day number 1 [first of the month]
+        # Set the dateTimeObject to 'America/Los_Angeles' if it's naive (no timezone info)
+        if dateTimeObject.tzinfo is None:
+            dateTimeObject = dateTimeObject.replace(tzinfo=tz_los_angeles)
+        else:
+            # Convert to 'America/Los_Angeles' if already has tzinfo
+            dateTimeObject = dateTimeObject.astimezone(tz_los_angeles)
+
+        # Create the start of the month based on the dateTimeObject
         startOfMonth = dateTimeObject.replace(day=1)
 
-        # condition to check if we are on december as it requires different logic    
         if startOfMonth.month == 12: 
-            # if december, then we make the calculation for the next year january 
-            # minus one second to bring us back to the correct last day of december
             endOfMonth = startOfMonth.replace(year=startOfMonth.year + 1, month=1, day=1) - timedelta(seconds=1)
         else:
             endOfMonth = startOfMonth.replace(month=startOfMonth.month + 1, day=1) - timedelta(seconds=1)
+        
         
         # declare our constraints of start day of the month and end day of the month 
         # in isoFormat()
@@ -283,7 +291,7 @@ def listAvailableTime(dateTimeObject):
         eventList = resultList.get('items', [])
 
         if not eventList: 
-            print("[listAvailableTimes]: There are no events this month")
+            print("[listAvailableTime]: There are no events this month")
         
         # (8, 20) signifies the hours from 8AM to 8PM  [24 hour format]
         # workHours = [(8, 20)] 
@@ -356,7 +364,7 @@ def listAvailableTime(dateTimeObject):
                 print(f"No available times on {date}\n")
 
     except Exception as e: 
-        print(f"[listAvailableTimes]: There was an error displaying the available weekend times {e}") 
+        print(f"[listAvailableTime]: There was an error displaying the available weekend times {e}") 
 
 def createEventObjectExample(): 
     # an Event object must have 

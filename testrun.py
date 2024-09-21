@@ -2,6 +2,7 @@
     This is going to hold some code runs of different scenarios
 """
 from datetime import timezone
+from zoneinfo import ZoneInfo
 from eventService import createEventObject, addEvent, checkWeekendCondition, listAvailableTime, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime 
@@ -94,15 +95,22 @@ def proto1():
                             """
                             scheduledEventList = populateEventsForDay(startTime)
                             # print(f"[Main Thread]: This is scheduledList {scheduledEventList}")
+                            formatStart = startTime
+                            timeHandle = formatStart.replace(tzinfo=ZoneInfo('America/Los_Angeles'))
+
+                            # print(f"[Main Thread]: This is the value of timeHandle {timeHandle}")
                             
                              
                             for event in scheduledEventList:
                                 # need to determine if this is a valid way of matching the 
                                 # requested startTime and event startTime 
-                                print(f"This is eventStart time {event['start']}")
+
                                 
-                                break
-                                while startTime in event['start']: 
+                                # print(f"[Main Thread]: This is the value of timeHandle {timeHandle.isoformat()}")
+                                # print(f"[Main Thread]: This is the value of event[start][dateTime] {event['start']['dateTime']}")
+                                # print(f"This is the condition between checking the timehandle and event thing {timeHandle.isoformat() == event['start']['dateTime']}")
+
+                                while timeHandle.isoformat() == event['start']['dateTime']: 
                                     print(f'[Teni]: Your requested time is not available')
                                     # now we need a function to display all the other available 
                                     # start times since the initial request was not fulfilled 

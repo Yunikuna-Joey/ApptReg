@@ -171,16 +171,36 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    proto1()
+    # proto1()
 
-    # userInput = ""
-    # while userInput not in ['exit', 'quit']:
-    #     userInput = input("Type something: ")
-    #     startTime = parser.parse(userInput)
-    #     checkWeekendCondition(startTime)
+    userInput = ""
+    while userInput not in ['exit', 'quit']:
+        userInput = input("Type something: ")
+        cleanStartTime = parser.parse(userInput)
+        
+        # populate the events for the requested day
+        eventList = populateEventsForDay(cleanStartTime)
+        modStartTime = cleanStartTime
+        newStartTime = modStartTime.replace(tzinfo=ZoneInfo('America/Los_Angeles'))
 
-    #     if checkWeekendCondition(startTime): 
-    #         finalList = populateEventsForDay(startTime)
-    #         print(f"[Main Thread]: {finalList}")
+        # iterate through the list of events for the requested day
+        # if there is a match from the requested day/time with an event in the list
+            # Notify the user that is the time is not available 
+            # list the available times for the day 
+            # break out of the for loop 
+        # else: we proceed as normal 
+
+        for event in eventList: 
+            if newStartTime.isoformat() == event['start']['dateTime']: 
+                print(f"[Teni]: Your requested time is not available. Please choose another time")
+                listAvailableTime(cleanStartTime)
+                break
+            else: 
+                print("We hit the else statement where nothing should happen besides the message")
+            
+        print('Done.')
+
+    # listAvailableTimeExample()
+
 
 
