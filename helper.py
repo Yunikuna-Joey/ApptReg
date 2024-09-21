@@ -4,6 +4,7 @@
 from datetime import timedelta
 import platform 
 
+# converts datetime objects for the listAvailable function 
 def convertDateTime(dateTimeObject): 
     # this looks like 'September 15, 2024 at 6:00AM'
     # formattedTime = dateTimeObject.strftime("%B %d, %Y at %-I:%M %p")
@@ -25,4 +26,12 @@ def convertDateTime(dateTimeObject):
         endTime = dateTimeObject + timedelta(hours=1)
         formattedEndTime = endTime.strftime("%-I:%M %p")
 
-    return f"{formattedTime} - {formattedEndTime}"
+    return f"{formattedTime} - {formattedEndTime}" 
+
+def resetObjectValues(dataObject): 
+    if isinstance(dataObject, dict): 
+        for key in dataObject: 
+            dataObject[key] = None 
+    
+    elif isinstance(dataObject, str): 
+        dataObject = ""

@@ -5,7 +5,7 @@ from datetime import timezone
 from zoneinfo import ZoneInfo
 from eventService import createEventObject, addEvent, checkWeekendCondition, listAvailableTime, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
-from helper import convertDateTime 
+from helper import convertDateTime, resetObjectValues
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
 
@@ -137,6 +137,11 @@ def proto1():
                 # we expect to see a [createEventObject] and [addEvent] message(s) here
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
+
+                # reset back to blank state after booking appointment
+                resetObjectValues(intentObject)
+                resetObjectValues(descriptionObject)
+                resetObjectValues(eventObject)
                 break
         
         # otherwise, respond back to user as normal [reset the intentObject if a non-valid one was made as well]
@@ -156,6 +161,34 @@ def testTime():
     msg = createConfirmationMessage("Joey", "vehicle information", "address", "interior", time)
 
     print(msg)
+
+def testWhileLoop():
+    userInput = ""
+    while userInput not in ['exit', 'quit']:
+        userInput = input("Type something: ")
+        cleanStartTime = parser.parse(userInput)
+        
+        # populate the events for the requested day
+        eventList = populateEventsForDay(cleanStartTime)
+        modStartTime = cleanStartTime
+        newStartTime = modStartTime.replace(tzinfo=ZoneInfo('America/Los_Angeles'))
+
+        # iterate through the list of events for the requested day
+        # if there is a match from the requested day/time with an event in the list
+            # Notify the user that is the time is not available 
+            # list the available times for the day 
+            # break out of the for loop 
+        # else: we proceed as normal 
+
+        for event in eventList: 
+            if newStartTime.isoformat() == event['start']['dateTime']: 
+                print(f"[Teni]: Your requested time is not available. Please choose another time")
+                listAvailableTime(cleanStartTime)
+                break
+            else: 
+                print("We hit the else statement where nothing should happen besides the message")
+            
+        print('Done.')
 
 # This function allows for question prompting the end user based on the information that we need 
 def generatePrompt(field): 
