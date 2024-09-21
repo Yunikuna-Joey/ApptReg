@@ -246,7 +246,8 @@ def listAvailableTimeExample():
     except Exception as e: 
         print(f"[listAvailableTimes]: There was an error displaying the available weekend times {e}") 
 
-def listAvailableTimeValidMonth(dateTimeObject): 
+#* This will ist all the available times within the month and after the current day
+def listAvailableTimeValidMonth(): 
     try: 
         calendarService = initializeCalendarService()
 
@@ -256,27 +257,19 @@ def listAvailableTimeValidMonth(dateTimeObject):
         currentDayObject = datetime.now(tz=tz_los_angeles)
         
         # Print the dateTimeObject with the assigned timezone for debugging
-        print(f"[listAvailableTime]: {dateTimeObject}")
+        print(f"[listAvailableTime]: {currentDayObject}")
 
-        # Set the dateTimeObject to 'America/Los_Angeles' if it's naive (no timezone info)
-        if dateTimeObject.tzinfo is None:
-            dateTimeObject = dateTimeObject.replace(tzinfo=tz_los_angeles)
+        startThreshhold = currentDayObject
+
+        if startThreshhold.month == 12: 
+            endOfMonth = startThreshhold.replace(year=startThreshhold.year + 1, month=1, day=1) - timedelta(seconds=1)
         else:
-            # Convert to 'America/Los_Angeles' if already has tzinfo
-            dateTimeObject = dateTimeObject.astimezone(tz_los_angeles)
-
-        # Create the start of the month based on the dateTimeObject
-        startOfMonth = dateTimeObject.replace(day=1)
-
-        if startOfMonth.month == 12: 
-            endOfMonth = startOfMonth.replace(year=startOfMonth.year + 1, month=1, day=1) - timedelta(seconds=1)
-        else:
-            endOfMonth = startOfMonth.replace(month=startOfMonth.month + 1, day=1) - timedelta(seconds=1)
+            endOfMonth = startThreshhold.replace(month=startThreshhold.month + 1, day=1) - timedelta(seconds=1)
         
         
         # declare our constraints of start day of the month and end day of the month 
         # in isoFormat()
-        timeMin = startOfMonth.isoformat()
+        timeMin = startThreshhold.isoformat()
         timeMax = endOfMonth.isoformat() 
 
         # this will return a dict object back or dict of dict
@@ -301,7 +294,7 @@ def listAvailableTimeValidMonth(dateTimeObject):
 
         # Iterating through every day of the current month 
         # starting from the first day of the current month
-        currDay = max(startOfMonth, currentDayObject)
+        currDay = currentDayObject
         while currDay <= endOfMonth: 
             # if the current day is a weekend [5, 6] representing 
             # Saturday and Sunday respectively 
@@ -368,6 +361,7 @@ def listAvailableTimeValidMonth(dateTimeObject):
     except Exception as e: 
         print(f"[listAvailableTime]: There was an error displaying the available weekend times {e}") 
 
+#* This will list all the available times for the entire month
 def listAvailableTimeMonth(dateTimeObject): 
     try: 
         calendarService = initializeCalendarService()

@@ -173,10 +173,10 @@ if __name__ == "__main__":
 
     # proto1()
     # listAvailableTimeExample()
-    userInput = input("[You]: ")
-    parse = parser.parse(userInput)
+    # userInput = input("[You]: ")
+    # parse = parser.parse(userInput)
 
-    print(checkDayState(parse))
+    listAvailableTimeValidMonth()
 
 
 

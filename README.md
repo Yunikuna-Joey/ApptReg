@@ -11,3 +11,4 @@
     - pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib [setting up access from service account to Google Calendars]
     - pip install python-dateutil
     - pip install pytz
+    - pip install tzdata [used on Windows OS to utilize ZoneInfo]
