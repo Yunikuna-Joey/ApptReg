@@ -2,7 +2,7 @@
     This is going to hold some code runs of different scenarios
 """
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTime, populateEventsForDay
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTimeDay, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime, resetObjectValues
 from dateutil import parser
@@ -97,7 +97,7 @@ def proto1():
                             # checks for all the events in
                             while any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList): 
                                 print(f"[Teni]: Your requested time is not available. Here are the available times")
-                                listAvailableTime(startTime)
+                                listAvailableTimeDay(startTime)
                                 print("[Teni]: Please choose another time that works for you")
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
@@ -182,7 +182,7 @@ def testWhileLoop():
         for event in eventList: 
             if newStartTime.isoformat() == event['start']['dateTime']: 
                 print(f"[Teni]: Your requested time is not available. Please choose another time")
-                listAvailableTime(cleanStartTime)
+                listAvailableTimeDay(cleanStartTime)
                 break
             else: 
                 print("We hit the else statement where nothing should happen besides the message")
