@@ -4,7 +4,7 @@
 from zoneinfo import ZoneInfo
 from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
-from helper import convertDateTime, resetObjectValues
+from helper import convertDateTime, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
 
@@ -110,6 +110,27 @@ def proto1():
                         except (ValueError, TypeError): 
                             print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
                             continue
+                    elif field == 'email': 
+                        while emailChecker(userInput) == False: 
+                            print("[Teni]: I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails.")
+                            userInput = input("[You]: ")
+                        
+                        eventObject[field] = userInput
+
+                    elif field == 'carModel':  
+                        while carDescriptionchecker(userInput) == False:  
+                            print("[Teni1]: I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)")
+                            userInput = input("[You]: ")
+
+                        
+                        eventObject[field] = userInput
+                    
+                    elif field == 'number': 
+                        while phoneNumberChecker(userInput) == False: 
+                            print("[Teni1]: I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567")
+                            userInput = input("[You]: ")
+                        
+                        eventObject[field] = userInput
 
                     else:  
                         # removes the trailing and leading whitespaces 

@@ -171,7 +171,7 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    # proto1()
+    proto1()
 
     # listAvailableTimeExample()
     # userInput = input("[You]: ")
@@ -185,10 +185,10 @@ if __name__ == "__main__":
     #     userInput = input("[You]: ")
 
     #     print(phoneNumberChecker(userInput)) 
-    userinput = ''
-    while userinput not in ['quit', 'stop']:
-        print("Type an car year/make/model")
-        userInput = input("[You]: ")
-        print(carDescriptionchecker(userInput))
+    # userinput = ''
+    # while userinput not in ['quit', 'stop']:
+    #     print("Type an car year/make/model")
+    #     userInput = input("[You]: ")
+    #     print(carDescriptionchecker(userInput))
 
 
