@@ -3,6 +3,8 @@
 """
 from datetime import timedelta
 import platform 
+import re 
+import dns.resolver
 
 # converts datetime objects for the listAvailable function 
 def convertDateTime(dateTimeObject): 
@@ -35,3 +37,23 @@ def resetObjectValues(dataObject):
     
     elif isinstance(dataObject, str): 
         dataObject = ""
+
+def emailChecker(email): 
+    # expression to determine userInput follows a valid email format
+    emailRegex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+
+    # return false if the formats do not match
+    if not re.match(emailRegex, email): 
+        return False 
+
+    # extract the domain portion of the email [everything after the @ sign]
+    domain = email.split('@')[-1]
+
+    print(f"This is the value of domain {domain}")
+
+    # check if the domain has a Mail exchange record
+    try: 
+        dns.resolver.resolve(domain, 'MX')
+        return True 
+    except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN) : 
+        return False

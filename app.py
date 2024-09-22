@@ -171,12 +171,19 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    proto1()
+    # proto1()
+
     # listAvailableTimeExample()
     # userInput = input("[You]: ")
     # parse = parser.parse(userInput)
 
     # listAvailableTimeValidMonth()
+    userinput = ''
+    while userinput not in ['quit', 'stop']:
+        print("Type an email address")
+        userInput = input("[You]: ")
+        print(emailChecker(userInput)) 
+        
 
 
 
