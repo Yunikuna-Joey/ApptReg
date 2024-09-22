@@ -87,3 +87,16 @@ def carDescriptionchecker(carDescription):
     print(f"The value of year {year}")
 
     return True if 1980 <= year <= currYear else False 
+
+def displayConfirmationMessage(eventObject): 
+    confirmationMsg = f"""
+Please confirm your details - 
+Name: {eventObject['name']}
+Phone: {eventObject['number']}
+Email: {eventObject['email']}
+Car: {eventObject['carModel']}
+Location: {eventObject['location']}
+Cleaning: {eventObject['description']}
+Time: {eventObject['start'] - eventObject['start'] + timedelta(hour=1)}
+    """
+    print(confirmationMsg)

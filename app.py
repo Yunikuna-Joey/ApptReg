@@ -171,7 +171,9 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    proto1()
+    # proto1()
+
+    displayConfirmationMessage()
 
     # listAvailableTimeExample()
     # userInput = input("[You]: ")
