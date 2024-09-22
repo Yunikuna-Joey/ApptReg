@@ -327,7 +327,6 @@ def listAvailableTimeValidMonth():
                     """ From the event object that we are processing, 
                     process that specific event object's start and end time(s)
                     """
-                    print(f"[event]: eventobject {event}\n")
                     # eventStart = datetime.fromisoformat(event['start'].get('dateTime').replace("Z", "+00:00"))
                     # eventEnd = datetime.fromisoformat(event['end'].get('dateTime').replace("Z", "+00:00"))
                     eventStart = datetime.fromisoformat(event['start'].get('dateTime'))
