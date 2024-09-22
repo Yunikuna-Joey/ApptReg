@@ -112,7 +112,18 @@ def proto1():
                             continue
 
                     else:  
-                        eventObject[field] = userInput.strip()
+                        # removes the trailing and leading whitespaces 
+                        userInput.strip()
+                        # print(f"This is the value of userInput {userInput}")
+                        
+                        # modifying/processing userInput 
+                        if 'facility' in userInput:
+                            userInput = 'Onsite Appointment'
+                        
+                        elif 'both' in userInput: 
+                            userInput = 'Exterior & Interior'
+                    
+                        eventObject[field] = userInput
 
                 print(f'This is the current values of eventObject {eventObject}')
             
@@ -203,7 +214,7 @@ def generatePrompt(field):
         'number': "What is your phone number?",
         'email': "What is your email address?",
         'carModel': "What is the year/make/model of your vehicle?", 
-        'location': "Do you need us to come to you or are you able to come to our establishment?",
+        'location': "Please provide your address if you would like for us to come to you, otherwise enter 'your facility'. ",
         'description': "What kind of wash are you looking for? We have interior, exterior, or you can say both",
         'start': "What day and time are you lookin for? Please specify the date and time in this format 'September 18 at 12PM'",
     }
