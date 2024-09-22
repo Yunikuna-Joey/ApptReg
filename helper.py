@@ -1,7 +1,7 @@
 """
     This file's purpose is to host some helper function(s) for various mini-tasks
 """
-from datetime import timedelta
+from datetime import timedelta, datetime
 import platform 
 import re 
 import dns.resolver
@@ -57,3 +57,33 @@ def emailChecker(email):
         return True 
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN) : 
         return False
+
+def phoneNumberChecker(phoneNumber): 
+    """ 
+        Valid: 
+            (111) 111-1111
+            111-111-1111
+            111.111.1111
+            111 111 1111 
+            1111111111
+    """
+    hyphenRegex = r'^(\+?1\s?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$'
+    return True if re.match(hyphenRegex, phoneNumber) else False 
+    
+def carDescriptionchecker(carDescription): 
+    # give an upper bound of +1 to the current year [possibility]
+    currYear = datetime.now().year + 1 
+    print(currYear)
+
+    #* year/make/model [4 digit year, Car brand, car model]
+    descriptionRegex = r'^(19\d{2}|20[01]\d|20[2-4]\d)\s+([A-Za-z]+(?:[ -][A-Za-z]+)*)\s+([A-Za-z0-9]+(?:[ -][A-Za-z0-9]+)*)$'
+
+    match = re.match(descriptionRegex, carDescription)
+
+    if not match: 
+        return False 
+    
+    year = int(match.group(1))
+    print(f"The value of year {year}")
+
+    return True if 1980 <= year <= currYear else False 

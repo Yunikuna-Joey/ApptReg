@@ -178,12 +178,17 @@ if __name__ == "__main__":
     # parse = parser.parse(userInput)
 
     # listAvailableTimeValidMonth()
+
+    # userinput = ''
+    # while userinput not in ['quit', 'stop']:
+    #     print("Type an phone number")
+    #     userInput = input("[You]: ")
+
+    #     print(phoneNumberChecker(userInput)) 
     userinput = ''
     while userinput not in ['quit', 'stop']:
-        print("Type an email address")
+        print("Type an car year/make/model")
         userInput = input("[You]: ")
-        print(emailChecker(userInput)) 
-        
-
+        print(carDescriptionchecker(userInput))
 
 
