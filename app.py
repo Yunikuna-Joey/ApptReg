@@ -190,18 +190,21 @@ if __name__ == "__main__":
     # parse = parser.parse(userInput)
     # print(f"Parse value {parse}")
 
+    # userInput = ''
+    # while userInput not in ['quit', 'stop']: 
+    #     print("Enter a time")
+    #     userInput = input('[You]: ')
+    #     startTime = parser.parse(userInput) 
+
+    #     print(f"This is the value of the checkDayState cause ??? {checkDayState(startTime)}")
+
+    #     while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
+    #         print(f'[Teni]: Please choose a weekend as we are not taking appointments on weekdays at the moment.') if checkWeekendCondition(startTime) == False else print(f"[Teni]: Please choose a current day or time in the future")
+    #         listAvailableTimeValidMonth()
+    #         userInput = input("[You]: ")
+    #         startTime = parser.parse(userInput)
+
     # listAvailableTimeValidMonth()
 
-    # userinput = ''
-    # while userinput not in ['quit', 'stop']:
-    #     print("Type an phone number")
-    #     userInput = input("[You]: ")
-
-    #     print(phoneNumberChecker(userInput)) 
-    # userinput = ''
-    # while userinput not in ['quit', 'stop']:
-    #     print("Type an car year/make/model")
-    #     userInput = input("[You]: ")
-    #     print(carDescriptionchecker(userInput))
 
 

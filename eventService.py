@@ -258,8 +258,8 @@ def listAvailableTimeValidMonth():
         currentDayObject = datetime.now(tz=tz_los_angeles).replace(hour=1, minute=0, second=0, microsecond=0)
         print(f"Value of currentDayobject {currentDayObject}")
         
-        # Print the dateTimeObject with the assigned timezone for debugging
-        print(f"[listAvailableTime]: {currentDayObject}")
+        # # Print the dateTimeObject with the assigned timezone for debugging
+        # print(f"[listAvailableTime]: {currentDayObject}")
 
         startThreshhold = currentDayObject
 

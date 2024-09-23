@@ -102,6 +102,12 @@ def proto1():
                                 print("[Teni]: Please choose another time that works for you")
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
+
+                                while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
+                                    print("[Teni]: Please choose another time that works for you")
+                                    userInput = input("[You]: ")
+                                    startTime = parser.parse(userInput)
+                                
                                 newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
 
                             #* This means we were able to pass the checks of being the correct day and having a valid timeslot
@@ -185,7 +191,7 @@ def proto1():
                                 startTime = parser.parse(newInput) 
 
                                 # check if the requested day is a weekend 
-                                while not checkWeekendCondition(startTime) or not checkDayState(startTime): 
+                                while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
                                     print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
                                     newInput = input("[You]: ")
                                     startTime = parser.parse(newInput)
