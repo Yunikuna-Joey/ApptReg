@@ -173,11 +173,22 @@ if __name__ == "__main__":
 
     # proto1()
 
-    displayConfirmationMessage()
+    eventObject = {
+        'name': 'Hinata', 
+        'number': '222-222-2222', 
+        'email': 'testing@email.com', 
+        'carModel': '2006 BMW 330i', 
+        'location': 'Facility', 
+        'description': 'Interior and Exterior', 
+        'start': ''
+    }
+    eventObject['start'] = parser.parse(input('[You]: '))
+    displayConfirmationMessage(eventObject)
 
     # listAvailableTimeExample()
     # userInput = input("[You]: ")
     # parse = parser.parse(userInput)
+    # print(f"Parse value {parse}")
 
     # listAvailableTimeValidMonth()
 

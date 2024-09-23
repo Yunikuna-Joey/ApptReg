@@ -4,7 +4,7 @@
 from zoneinfo import ZoneInfo
 from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay
 from emailService import createConfirmationMessage, sendEmail
-from helper import convertDateTime, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker
+from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
 
@@ -148,6 +148,9 @@ def proto1():
 
                 print(f'This is the current values of eventObject {eventObject}')
             
+            # ensure that everything looks right to the user before packing the event object
+            displayConfirmationMessage(eventObject) 
+
             # Goes through all of the eventObject values to determine if all values are valid, true, [not None]
             if all(eventObject.values()):  
                 descriptionObject += eventObject['description'] + "\n" + eventObject['carModel'] +  "\n" + eventObject['number'] + "\n" + eventObject['email']       

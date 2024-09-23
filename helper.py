@@ -97,6 +97,8 @@ Email: {eventObject['email']}
 Car: {eventObject['carModel']}
 Location: {eventObject['location']}
 Cleaning: {eventObject['description']}
-Time: {eventObject['start'] - eventObject['start'] + timedelta(hour=1)}
+Date: {eventObject['start'].strftime('%B %d, %Y')}
+Time: {eventObject['start'].strftime('%I:%M %p')} - {(eventObject['start'] + timedelta(hours=1)).strftime('%I:%M %p')}
     """
     print(confirmationMsg)
+    # return confirmationMsg
