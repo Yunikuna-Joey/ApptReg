@@ -21,7 +21,7 @@ def testRun():
     # createDeleteConfirmationMessage(os.getenv('TEST_USER'))
     # createEditConfirmationMessage(os.getenv('TEST_USER'))
 
-# successful run of adding event to calendar
+# successful run of adding event to calendar [addition]
 def proto1(): 
     print('Initializing the chat')
     
@@ -293,6 +293,29 @@ def proto1():
             response = model.generate_content(userInput)
             print(f"[Teni]: {response.text}")
             print(f"This is intentObject after resetting the value. {intentObject}")
+
+def proto2(): 
+    print("Initializing the delete event scenario chat")
+    model = initializeChatModel() 
+    intentModel = initializeClassificationModel() 
+
+    # plan out the delete event scenario before coding 
+    """ 
+        (
+        Instead of asking for portions of the eventObject for verification, 
+            lets generate a 6 digit unique code for each appointment for 
+            each addition of an event during event Add. 
+
+            in delete scenario, we reference the 6 digit code for the specific event as lookup
+
+            in edit scenario, we will also reference the 6 digit code for the specific event as look up to determine which specific event
+        )
+        
+        User should be making an delete appointment request [intent]
+        Prompt the end user to provide the 6 digit code that was emailed to them [maybe text message support in the future?]
+        
+
+    """
 
 # testing the time object (datetime type) within our confirmation message creation 
 def testTime(): 
