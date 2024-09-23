@@ -106,7 +106,7 @@ def proto1():
                                 print(f"[Teni]: Your requested time is not available. Here are the available times")
                                 # listAvailableTimeMonth(startTime)
                                 listAvailableTimeValidMonth()
-                                print("[Teni]: Please choose another time that works for you")
+                                print("[Teni]: Please choose a date/time that works for you in the format: (September 22 at 12PM)")
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
 
@@ -181,7 +181,7 @@ def proto1():
             while userInput != 'done':
                 # ensure that everything looks right to the user before packing the event object
                 displayConfirmationMessage(eventObject) 
-                
+
                 print("[Teni]: Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'.")
                 userInput = input('[You]: ').lower().strip()
 
@@ -223,7 +223,7 @@ def proto1():
                                     print(f"[Teni]: Your requested time is not available. Here are the available times")
                                     # listAvailableTimeMonth(startTime)
                                     listAvailableTimeValidMonth()
-                                    print("[Teni]: Please choose another time that works for you")
+                                    print("[Teni]: Please choose a date/time that works for you in the format: (September 22 at 12PM)")
                                     newInput = input("[You]: ")
                                     startTime = parser.parse(newInput)
                                     newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
@@ -273,11 +273,10 @@ def proto1():
                 # This will create the actual calendar event in the backend 
                 addEvent(confirmationObject)
 
+                #**************************************** Uncomment the send email function in production ***********************************************************
                 # we will need to send a confirmation email to the customer after adding the event into google calendar
                 confirmationMsg = createConfirmationMessage(eventObject['name'], eventObject['carModel'], eventObject['location'], eventObject['description'], eventObject['start'])
                 # sendEmail(confirmationMsg, eventObject['email'])
-
-                # we expect to see a [createEventObject] and [addEvent] message(s) here
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
 
