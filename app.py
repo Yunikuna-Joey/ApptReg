@@ -171,19 +171,19 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    # proto1()
+    proto1()
 
-    eventObject = {
-        'name': 'Hinata', 
-        'number': '222-222-2222', 
-        'email': 'testing@email.com', 
-        'carModel': '2006 BMW 330i', 
-        'location': 'Facility', 
-        'description': 'Interior and Exterior', 
-        'start': ''
-    }
-    eventObject['start'] = parser.parse(input('[You]: '))
-    displayConfirmationMessage(eventObject)
+    # eventObject = {
+    #     'name': 'Hinata', 
+    #     'number': '222-222-2222', 
+    #     'email': 'testing@email.com', 
+    #     'carModel': '2006 BMW 330i', 
+    #     'location': 'Facility', 
+    #     'description': 'Interior and Exterior', 
+    #     'start': ''
+    # }
+    # eventObject['start'] = parser.parse(input('[You]: '))
+    # displayConfirmationMessage(eventObject)
 
     # listAvailableTimeExample()
     # userInput = input("[You]: ")

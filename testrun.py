@@ -151,6 +151,89 @@ def proto1():
             # ensure that everything looks right to the user before packing the event object
             displayConfirmationMessage(eventObject) 
 
+            # create a hashmap that maps the field to natural language 
+            languageFieldMap = { 
+                'name': ['name', 'change name', 'update name'],
+                'number': ['phone', 'number', 'update phone', 'change number'],
+                'email': ['email', 'update email', 'change email'],
+                'carModel': ['car', 'update car', 'change car', 'car model'],
+                'location': ['location', 'change location', 'update location'],
+                'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
+                'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
+            }
+
+            while userInput != 'done':
+                print("[Teni]: Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'.")
+                userInput = input('[You]: ').lower()
+
+                # iterate through key and values
+                for field, keywords in languageFieldMap.items(): 
+                    # if any of the keyword is in the user input [through looping throught the values]
+                    if any(keyword in userInput for keyword in keywords): 
+                        # generate the correct prompt for the field the user wants to edit 
+                        prompt = generatePrompt(field)
+                        print(f"[Teni]: {prompt}")
+
+                        # provide the available times again if user is looking to re-do the time 
+                        if field == 'start': 
+                            listAvailableTimeValidMonth()
+
+                        newInput = input("[You]: ")
+
+                        if field == 'start': 
+                            try: 
+                                startTime = parser.parse(newInput) 
+
+                                # check if the requested day is a weekend 
+                                while not checkWeekendCondition(startTime) or not checkDayState(startTime): 
+                                    print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                    newInput = input("[You]: ")
+                                    startTime = parser.parse(newInput)
+
+                                scheduledEventList = populateEventsForDay(startTime)
+
+                                newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
+
+                                while any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList): 
+                                    print(f"[Teni]: Your requested time is not available. Here are the available times")
+                                    # listAvailableTimeMonth(startTime)
+                                    listAvailableTimeValidMonth()
+                                    print("[Teni]: Please choose another time that works for you")
+                                    userInput = input("[You]: ")
+                                    startTime = parser.parse(userInput)
+                                    newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
+                                
+                                eventObject['start'] = startTime
+
+                            except (ValueError, TypeError):
+                                print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
+                                continue
+
+                        elif field == 'email':
+                            while not emailChecker(newInput):
+                                print("[Teni]: Invalid email format. Please enter a valid email address.")
+                                newInput = input("[You]: ")
+                            eventObject[field] = newInput
+
+                        elif field == 'carModel':
+                            while not carDescriptionchecker(newInput):
+                                print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
+                                newInput = input("[You]: ")
+                            eventObject[field] = newInput
+
+                        elif field == 'number':
+                            while not phoneNumberChecker(newInput):
+                                print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
+                                newInput = input("[You]: ")
+                            eventObject[field] = newInput
+
+                        else:
+                            # For generic fields like name, location, etc.
+                            eventObject[field] = newInput.strip()
+
+                        print(f"[Teni]: The {field} has been updated.")
+                             
+
             # Goes through all of the eventObject values to determine if all values are valid, true, [not None]
             if all(eventObject.values()):  
                 descriptionObject += eventObject['description'] + "\n" + eventObject['carModel'] +  "\n" + eventObject['number'] + "\n" + eventObject['email']       

@@ -49,7 +49,7 @@ def emailChecker(email):
     # extract the domain portion of the email [everything after the @ sign]
     domain = email.split('@')[-1]
 
-    print(f"This is the value of domain {domain}")
+    # print(f"This is the value of domain {domain}")
 
     # check if the domain has a Mail exchange record
     try: 
