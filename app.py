@@ -188,7 +188,8 @@ if __name__ == "__main__":
     # listAvailableTimeExample()
     # userInput = input("[You]: ")
     # parse = parser.parse(userInput)
-    # print(f"Parse value {parse}")
+
+    # print(checkWorkHour(parse)) 
 
     # userInput = ''
     # while userInput not in ['quit', 'stop']: 

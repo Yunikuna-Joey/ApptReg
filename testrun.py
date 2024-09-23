@@ -2,7 +2,7 @@
     This is going to hold some code runs of different scenarios
 """
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker
 from dateutil import parser
@@ -71,8 +71,15 @@ def proto1():
                             
                             #* Check if the requested day is a weekend
                                 #* if not prompt the user to choose a different day
-                            while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
-                                print(f'[Teni]: Please choose a weekend as we are not taking appointments on weekdays at the moment.')
+                            while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False: 
+                                if checkWeekendCondition(startTime) == False:
+                                    print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                elif checkDayState(startTime) == False:
+                                    print("[Teni]: Please choose a valid day not in the past.")
+                                elif checkWorkHour(startTime) == False:
+                                    print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+                                
+                                listAvailableTimeValidMonth()
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
                             
@@ -103,8 +110,14 @@ def proto1():
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
 
-                                while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
-                                    print("[Teni]: Please choose another time that works for you")
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False: 
+                                    if checkWeekendCondition(startTime) == False:
+                                        print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                    elif checkDayState(startTime) == False:
+                                        print("[Teni]: Please choose a valid day not in the past.")
+                                    elif checkWorkHour(startTime) == False:
+                                        print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+
                                     userInput = input("[You]: ")
                                     startTime = parser.parse(userInput)
                                 
@@ -153,9 +166,6 @@ def proto1():
                         eventObject[field] = userInput
 
                 print(f'This is the current values of eventObject {eventObject}')
-            
-            # ensure that everything looks right to the user before packing the event object
-            displayConfirmationMessage(eventObject) 
 
             # create a hashmap that maps the field to natural language 
             languageFieldMap = { 
@@ -169,8 +179,11 @@ def proto1():
             }
 
             while userInput != 'done':
+                # ensure that everything looks right to the user before packing the event object
+                displayConfirmationMessage(eventObject) 
+                
                 print("[Teni]: Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'.")
-                userInput = input('[You]: ').lower()
+                userInput = input('[You]: ').lower().strip()
 
                 # iterate through key and values
                 for field, keywords in languageFieldMap.items(): 
@@ -191,8 +204,14 @@ def proto1():
                                 startTime = parser.parse(newInput) 
 
                                 # check if the requested day is a weekend 
-                                while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
-                                    print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False: 
+                                    if checkWeekendCondition(startTime) == False:
+                                        print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                    elif checkDayState(startTime) == False:
+                                        print("[Teni]: Please choose a valid day not in the past.")
+                                    elif checkWorkHour(startTime) == False:
+                                        print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+
                                     newInput = input("[You]: ")
                                     startTime = parser.parse(newInput)
 
@@ -205,8 +224,8 @@ def proto1():
                                     # listAvailableTimeMonth(startTime)
                                     listAvailableTimeValidMonth()
                                     print("[Teni]: Please choose another time that works for you")
-                                    userInput = input("[You]: ")
-                                    startTime = parser.parse(userInput)
+                                    newInput = input("[You]: ")
+                                    startTime = parser.parse(newInput)
                                     newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
                                 
                                 eventObject['start'] = startTime

@@ -599,13 +599,25 @@ def checkWeekendCondition(datetimeObject):
 def checkDayState(datetimeObject): 
     try: 
         currentDay = datetime.now()
-        print(f"[function]: This is currentDay {currentDay}")
-        print(f"[function]: This is datetimeObject {datetimeObject}")
+        # print(f"[function]: This is currentDay {currentDay}")
+        # print(f"[function]: This is datetimeObject {datetimeObject}")
 
         return datetimeObject >= currentDay
 
     except Exception as e: 
         print(f"This is not a valid datetime object {e}")
+
+# This function will check to see if the requested day is within the business hours 
+def checkWorkHour(datetimeObject): 
+    tz = ZoneInfo('America/Los_Angeles')
+    datetimeObject = datetimeObject.astimezone(tz)
+    
+    workHourBegin = datetimeObject.replace(hour=8, minute=0, second=0, microsecond=0)
+    workHourEnd = datetimeObject.replace(hour=20, minute=0, second=0, microsecond=0)
+
+    return workHourBegin <= datetimeObject < workHourEnd 
+
+
 
 #* This returns a list of all the events going on for the day
 def populateEventsForDay(datetimeObject): 
