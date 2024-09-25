@@ -548,6 +548,8 @@ def addEvent(eventObject):
         event = calendarService.events().insert(calendarId=TARGET_CALENDAR_ID, body=eventObject).execute()
         print('[addEvent]: Event created- %s' % (event.get('htmlLink')))
 
+        return event
+    
     except Exception as e: 
         print(f"[addEvent]: An error occurred-- {e}")
 
@@ -616,7 +618,6 @@ def checkWorkHour(datetimeObject):
     workHourEnd = datetimeObject.replace(hour=20, minute=0, second=0, microsecond=0)
 
     return workHourBegin <= datetimeObject < workHourEnd 
-
 
 
 #* This returns a list of all the events going on for the day

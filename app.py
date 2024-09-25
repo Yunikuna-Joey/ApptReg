@@ -173,6 +173,7 @@ if __name__ == "__main__":
 
     proto1()
 
+    #** keep this as a basis for eventObject declaration
     # eventObject = {
     #     'name': 'Hinata', 
     #     'number': '222-222-2222', 
@@ -185,11 +186,6 @@ if __name__ == "__main__":
     # eventObject['start'] = parser.parse(input('[You]: '))
     # displayConfirmationMessage(eventObject)
 
-    # listAvailableTimeExample()
-    # userInput = input("[You]: ")
-    # parse = parser.parse(userInput)
-
-    # print(checkWorkHour(parse)) 
 
     # userInput = ''
     # while userInput not in ['quit', 'stop']: 
@@ -206,6 +202,7 @@ if __name__ == "__main__":
     #         startTime = parser.parse(userInput)
 
     # listAvailableTimeValidMonth()
+
 
 
 

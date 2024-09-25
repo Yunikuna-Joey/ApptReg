@@ -62,6 +62,7 @@ def proto1():
 
                     # invoke the user to input the missing information
                     userInput = input("[You]: ")
+                    userInput.strip() # remove the leading and trailing whitespaces from the user input 
                     
                     #* Parses the start_time field 
                     if field == 'start': 
@@ -132,14 +133,14 @@ def proto1():
                     elif field == 'email': 
                         while emailChecker(userInput) == False: 
                             print("[Teni]: I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails.")
-                            userInput = input("[You]: ")
+                            userInput = input("[You]: ").strip()
                         
                         eventObject[field] = userInput
 
                     elif field == 'carModel':  
                         while carDescriptionchecker(userInput) == False:  
                             print("[Teni1]: I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)")
-                            userInput = input("[You]: ")
+                            userInput = input("[You]: ").strip()
 
                         
                         eventObject[field] = userInput
@@ -147,7 +148,7 @@ def proto1():
                     elif field == 'number': 
                         while phoneNumberChecker(userInput) == False: 
                             print("[Teni1]: I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567")
-                            userInput = input("[You]: ")
+                            userInput = input("[You]: ").strip()
                         
                         eventObject[field] = userInput
 
@@ -198,6 +199,7 @@ def proto1():
                             listAvailableTimeValidMonth()
 
                         newInput = input("[You]: ")
+                        newInput.strip() # remove the leading and trailing whitespaces before processing in our back-end functions
 
                         if field == 'start': 
                             try: 
@@ -212,7 +214,7 @@ def proto1():
                                     elif checkWorkHour(startTime) == False:
                                         print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
 
-                                    newInput = input("[You]: ")
+                                    newInput = input("[You]: ").strip()
                                     startTime = parser.parse(newInput)
 
                                 scheduledEventList = populateEventsForDay(startTime)
@@ -224,7 +226,7 @@ def proto1():
                                     # listAvailableTimeMonth(startTime)
                                     listAvailableTimeValidMonth()
                                     print("[Teni]: Please choose a date/time that works for you in the format: (September 22 at 12PM)")
-                                    newInput = input("[You]: ")
+                                    newInput = input("[You]: ").strip()
                                     startTime = parser.parse(newInput)
                                     newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
                                 
@@ -237,19 +239,19 @@ def proto1():
                         elif field == 'email':
                             while not emailChecker(newInput):
                                 print("[Teni]: Invalid email format. Please enter a valid email address.")
-                                newInput = input("[You]: ")
+                                newInput = input("[You]: ").strip()
                             eventObject[field] = newInput
 
                         elif field == 'carModel':
                             while not carDescriptionchecker(newInput):
                                 print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
-                                newInput = input("[You]: ")
+                                newInput = input("[You]: ").strip()
                             eventObject[field] = newInput
 
                         elif field == 'number':
                             while not phoneNumberChecker(newInput):
                                 print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
-                                newInput = input("[You]: ")
+                                newInput = input("[You]: ").strip()
                             eventObject[field] = newInput
 
                         else:
@@ -271,12 +273,21 @@ def proto1():
                     eventObject['start']
                 )
                 # This will create the actual calendar event in the backend 
-                addEvent(confirmationObject)
+                confirmationEvent = addEvent(confirmationObject)
+                uniqueEventId = confirmationEvent.get('id')
 
                 #**************************************** Uncomment the send email function in production ***********************************************************
                 # we will need to send a confirmation email to the customer after adding the event into google calendar
-                confirmationMsg = createConfirmationMessage(eventObject['name'], eventObject['carModel'], eventObject['location'], eventObject['description'], eventObject['start'])
-                # sendEmail(confirmationMsg, eventObject['email'])
+                confirmationMsg = createConfirmationMessage(
+                    uniqueEventId, 
+                    eventObject['name'], 
+                    eventObject['email'], 
+                    eventObject['carModel'], 
+                    eventObject['location'], 
+                    eventObject['description'], 
+                    eventObject['start']
+                )
+                sendEmail(confirmationMsg, eventObject['email'])
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
 

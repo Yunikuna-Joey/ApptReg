@@ -52,32 +52,34 @@ def createConfirmationMessageExample():
     print("[createMessageHeader]: Message object created successfully.")
 
 # return message
-def createConfirmationMessage(customerName, vehicleInfo, address, cleanType, startTime): 
+def createConfirmationMessage(eventId, customerName, customerEmail, vehicleInfo, address, cleanType, startTime): 
     #* setup MIME 
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
     message['From'] = smtp_username
-    message['To'] = os.getenv('TEST_USER') # swap this to recipient user email
+    message['To'] = customerEmail # swap this to recipient user email
     message['Subject'] = "Appointment Confirmation"
 
     #* Message content
     body = f""" 
-    Hello {customerName}, 
+Hello {customerName}, 
 
-    This message is a confirmation of your car detailing appointment. 
+This message is a confirmation of your car detailing appointment. 
+Your confirmation code is {eventId}
+Please keep this code safe as if you need to speak with our bot again, you can use the confirmation code to modify or cancel your appointment.
 
-    Details: 
-    - Car: {vehicleInfo}
-    - **Location**: {address} 
-    - **Type of Cleaning**: {cleanType}
-    - **Time**: {convertDateTime(startTime)} 
+Details: 
+- Car: {vehicleInfo}
+- **Location**: {address} 
+- **Type of Cleaning**: {cleanType}
+- **Time**: {convertDateTime(startTime)} 
 
-    Feel free to add this event in your Google Calendar automatically by clicking the .ics file.
+Feel free to add this event in your Google Calendar automatically by clicking the .ics file.
 
-    Best regards,
-    Ten (Just an AutoBot)
+Best regards,
+Ten (Just an AutoBot)
 
-    Do not reply back to this message, inbox is unmonitored.
+Do not reply back to this message, inbox is unmonitored.
 
     """
 
