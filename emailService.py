@@ -1,9 +1,12 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 
 from helper import convertDateTime
-from datetime import timedelta
+from datetime import timedelta, datetime
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -85,6 +88,39 @@ Do not reply back to this message, inbox is unmonitored.
 
     # convert message to plain text
     message.attach(MIMEText(body, 'plain'))
+
+    tzInfo = ZoneInfo('America/Los_Angeles')
+    eventStart = startTime.astimezone(tzInfo)
+    eventEnd = (startTime + timedelta(hours=1)) 
+
+    formatStart = eventStart.strftime('%Y%m%dT%H%M%S')
+    formatEnd = eventEnd.strftime('%Y%m%dT%H%M%S')
+    
+    icsContent = f"""BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//YourCompany//NONSGML v1.0//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:{eventId}
+DTSTAMP:{datetime.now(tzInfo).strftime('%Y%m%dT%H%M%S')}
+DTSTART;TZID=America/Los_Angeles:{formatStart}
+DTEND;TZID=America/Los_Angeles:{formatEnd}
+SUMMARY:Car Detailing Appointment
+DESCRIPTION:{cleanType} - {vehicleInfo}
+LOCATION:{address}
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+    """
+
+    # convert the icsContent to a MIMEBASE object and attach into the email 
+    portion = MIMEBase('text', 'calendar', method='REQUEST', name='appointment.ics')
+    portion.set_payload(icsContent)
+    encoders.encode_base64(portion)
+    portion.add_header('Content-Disposition', 'attachment; filename="appointment.ics"')
+    message.attach(portion)
 
     print("[createMessageHeader]: Message object created successfully.")
 
