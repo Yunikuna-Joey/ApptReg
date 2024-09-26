@@ -126,7 +126,7 @@ END:VCALENDAR
 
     return message
 
-def createDeleteConfirmationMessage(recipientEmail): 
+def createDeleteConfirmationMessage(customerName, recipientEmail, vehicleInfo, cleanType, startTime): 
     # setup MIME 
     message = MIMEMultipart()
     # setup message headers 
@@ -135,23 +135,21 @@ def createDeleteConfirmationMessage(recipientEmail):
     message['Subject'] = 'Appointment Cancellation'
     
     #* Message content 
-    body = """ 
-    Hello insert_customer_name_here, 
+    body = f""" 
+Hello {customerName}, 
 
-    This message is to inform you of your appointment cancellation. 
+This message is to inform you of your appointment cancellation. 
 
-    Cancelled appointment details: 
-    **Car**: Year, Make, Model 
-    **Location**: Address 
-    **Type of Cleaning**: Interior, exterior, both
-    **Start Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
-    **End Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
+Cancelled appointment details: 
+**Car**: {vehicleInfo} 
+**Type of Cleaning**: {cleanType}
+**Time**: {convertDateTime(startTime)}
 
-    Feel free to re-book your appointment to a time that works best for you. 
-    Have a great day, 
-    Ten (Just an AutoBot)
+Feel free to re-book your appointment to a time that works best for you. 
+Have a great day, 
+Ten (Just an AutoBot)
 
-    Do not reply back to this message, inbox is unmonitored.
+Do not reply back to this message, inbox is unmonitored.
     """
 
     message.attach(MIMEText(body, 'plain'))

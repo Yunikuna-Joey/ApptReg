@@ -1,6 +1,7 @@
 """ 
     This is going to hold some code runs of different scenarios
 """
+from datetime import datetime
 from zoneinfo import ZoneInfo
 from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, getEventObjectById, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
@@ -351,9 +352,15 @@ def proto2():
             #   send the delete confirmation email 
             if cancelConfirmationInput.strip().lower() in ['yes', 'correct', 'thats the one', 'yup', 'mhm']: 
                 deleteEvent(confirmationCode) 
-                deleteMsgObject = createDeleteConfirmationMessage((eventObject['description'].split('\n'))[3]) 
+                deleteMsgObject = createDeleteConfirmationMessage(
+                    eventObject['summary'],
+                    (eventObject['description'].split('\n'))[3], 
+                    (eventObject['description'].split('\n'))[1], 
+                    (eventObject['description'].split('\n'))[0], 
+                    datetime.fromisoformat(eventObject['start']['dateTime'])
+                ) 
                 print(f"This is the deleteMessageObject {deleteMsgObject}")
-                # sendEmail(deleteMsgObject) 
+                sendEmail(deleteMsgObject, (eventObject['description'].split('\n'))[3]) 
                 
             # otherwise, break out of the delete intent and revert back to retrieving intent grabbing            
             else: 
