@@ -288,7 +288,7 @@ def proto1():
                     eventObject['description'], 
                     eventObject['start']
                 )
-                # sendEmail(confirmationMsg, eventObject['email'])
+                sendEmail(confirmationMsg, eventObject['email'])
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
 

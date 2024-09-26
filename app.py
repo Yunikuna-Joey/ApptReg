@@ -171,8 +171,8 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    # proto1()
-    proto2()
+    proto1() # add event scenario
+    # proto2() # delete event scenario
 
     #** keep this as a basis for eventObject declaration
     # eventObject = {
@@ -185,6 +185,8 @@ if __name__ == "__main__":
     #     'start': ''
     # }
     # eventObject['start'] = parser.parse(input('[You]: '))
+    # msg = createBoldMsg('eventCodething', 'name', 'emailaddress', 'yup', '23812', 'both', eventObject['start'])
+    # sendEmail(msg, 'lujoey68@gmail.com')
     # displayConfirmationMessage(eventObject)
     
     # userInput = ''

@@ -65,29 +65,32 @@ def createConfirmationMessage(eventId, customerName, customerEmail, vehicleInfo,
 
     #* Message content
     body = f""" 
-Hello {customerName}, 
+<html>
+<body>
+<p>Hello {customerName},</p>
 
-This message is a confirmation of your car detailing appointment. 
-Your confirmation code is {eventId}
-Please keep this code safe as if you need to speak with our bot again, you can use the confirmation code to modify or cancel your appointment.
+<p>This message is a confirmation of your car detailing appointment.<br>
+Your confirmation code is <b>{eventId}</b><br>
+Please keep this code safe, as you can use it to modify or cancel your appointment.</p>
 
-Details: 
-- Car: {vehicleInfo}
-- **Location**: {address} 
-- **Type of Cleaning**: {cleanType}
-- **Time**: {convertDateTime(startTime)} 
+<p><b>Details:</b><br>
+Car: <b>{vehicleInfo}</b><br>
+Location: <b>{address}</b><br>
+Service: <b>{cleanType}</b><br>
+Time: <b>{convertDateTime(startTime)}</b></p>
 
-Feel free to add this event in your Google Calendar automatically by clicking the .ics file.
+<p>Feel free to add this event to your Google Calendar automatically by clicking the .ics file.</p>
 
-Best regards,
-Ten (Just an AutoBot)
+<p>Best regards,<br>
+Ten (Just an AutoBot)</p>
 
-Do not reply back to this message, inbox is unmonitored.
-
+<p><i>Do not reply back to this message, the inbox is unmonitored.</i></p>
+</body>
+</html>
     """
 
     # convert message to plain text
-    message.attach(MIMEText(body, 'plain'))
+    message.attach(MIMEText(body, 'html'))
 
     tzInfo = ZoneInfo('America/Los_Angeles')
     eventStart = startTime.astimezone(tzInfo)
@@ -213,3 +216,41 @@ def sendEmail(messageObject, recipientEmailAddress):
     # exit the server, it does not need to stay on, only when it needs to send emails
     server.quit()
 
+def createBoldMsg(eventId, customerName, customerEmail, vehicleInfo, address, cleanType, startTime):
+    #* setup MIME 
+    message = MIMEMultipart()
+    # setup to, from, and subject line portion of the email
+    message['From'] = smtp_username
+    message['To'] = customerEmail # swap this to recipient user email
+    message['Subject'] = "Appointment Confirmation"
+
+    #* Message content (HTML format for bold text)
+    body = f""" 
+<html>
+<body>
+<p>Hello {customerName},</p>
+
+<p>This message is a confirmation of your car detailing appointment.<br>
+Your confirmation code is <b>{eventId}</b><br>
+Please keep this code safe, as you can use it to modify or cancel your appointment.</p>
+
+<p><b>Details:</b><br>
+Car: <b>{vehicleInfo}</b><br>
+Location: <b>{address}</b><br>
+Service: <b>{cleanType}</b><br>
+Time: <b>{convertDateTime(startTime)}</b></p>
+
+<p>Feel free to add this event to your Google Calendar automatically by clicking the .ics file.</p>
+
+<p>Best regards,<br>
+Ten (Just an AutoBot)</p>
+
+<p><i>Do not reply back to this message, the inbox is unmonitored.</i></p>
+</body>
+</html>
+    """
+
+    # Attach the message in HTML format
+    message.attach(MIMEText(body, 'html'))
+
+    return message
