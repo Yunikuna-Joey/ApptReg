@@ -5,7 +5,6 @@ from googleapiclient.discovery import build
 
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-import pytz
 
 from dotenv import load_dotenv
 import os
@@ -680,6 +679,9 @@ def populateEventsForDay(datetimeObject):
 
 #* return an eventObject based on eventId 
 def getEventObjectById(eventObjectId):
+    """
+    Returns an eventObject when you provide the eventId
+    """
     try: 
         calendarService = initializeCalendarService() 
 
@@ -701,10 +703,3 @@ Vehicle: {descriptionList[1]}
 Time: {convertDateTime(dtObjectStart)}
     """
     return eventObjectInfo
-
-#     print(f"""
-# Name: {eventObject['summary']}
-# Vehicle: {descriptionList[1]}
-# Time: {eventObject['start']['dateTime']} - {eventObject['end']['dateTime']}
-#     """
-#     )
