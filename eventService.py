@@ -8,7 +8,9 @@ from zoneinfo import ZoneInfo
 import pytz
 
 from dotenv import load_dotenv
-import os 
+import os
+
+from helper import convertDateTime 
 load_dotenv()
 
 # constructor for calendar service
@@ -676,6 +678,7 @@ def populateEventsForDay(datetimeObject):
     except Exception as e:
         print(f"[populateEventsForDay]: There was an error with gathering events for the day {e}") 
 
+#* return an eventObject based on eventId 
 def getEventObjectById(eventObjectId):
     try: 
         calendarService = initializeCalendarService() 
@@ -688,3 +691,20 @@ def getEventObjectById(eventObjectId):
         print(f"There was an error retrieving the event object {e}")
         return None 
 
+def displayEventObjectInfo(eventObject): 
+    descriptionList = eventObject['description'].split('\n')
+    dtObjectStart = datetime.fromisoformat(eventObject['start']['dateTime'])
+
+    eventObjectInfo=f"""
+Name: {eventObject['summary']}
+Vehicle: {descriptionList[1]}
+Time: {convertDateTime(dtObjectStart)}
+    """
+    return eventObjectInfo
+
+#     print(f"""
+# Name: {eventObject['summary']}
+# Vehicle: {descriptionList[1]}
+# Time: {eventObject['start']['dateTime']} - {eventObject['end']['dateTime']}
+#     """
+#     )

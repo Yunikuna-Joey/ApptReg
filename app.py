@@ -172,6 +172,7 @@ if __name__ == "__main__":
     # testTime()
 
     # proto1()
+    proto2()
 
     #** keep this as a basis for eventObject declaration
     # eventObject = {

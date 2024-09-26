@@ -2,8 +2,8 @@
     This is going to hold some code runs of different scenarios
 """
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
-from emailService import createConfirmationMessage, sendEmail
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, getEventObjectById, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
@@ -333,10 +333,39 @@ def proto2():
         if not intentObject: 
             intentObject = intentModel.generate_content(userInput)
         
-        if intentObject.strip().lower() in ['delete']: 
+        if intentObject.text.strip().lower() in ['delete']: 
             print("[Teni]: Please provide the confirmation code you received with your appointment email to help me find your appointment!")
             confirmationCode = input("[You]: ")
+            eventObject = getEventObjectById(confirmationCode)
 
+            eventObjectInfo = displayEventObjectInfo(eventObject)
+
+            # we need to print out the event object 
+            print(f"[Teni]: {eventObjectInfo}")
+            print(f"[Teni]: This is what I found with the confirmation code. Is this the appointment you would like to cancel?")
+            
+            cancelConfirmationInput = input("[You]: ")
+
+            # if cancelConfirmationInput is yes
+            #   delete the appointment from the calendar
+            #   send the delete confirmation email 
+            if cancelConfirmationInput.strip().lower() in ['yes', 'correct', 'thats the one', 'yup', 'mhm']: 
+                deleteEvent(confirmationCode) 
+                deleteMsgObject = createDeleteConfirmationMessage((eventObject['description'].split('\n'))[3]) 
+                print(f"This is the deleteMessageObject {deleteMsgObject}")
+                # sendEmail(deleteMsgObject) 
+                
+            # otherwise, break out of the delete intent and revert back to retrieving intent grabbing            
+            else: 
+                intentObject = ""
+                response = model.generate_content(cancelConfirmationInput)
+                print(f"[Teni]: {response.text}")
+
+        else: 
+            # reset the intent object 
+            intentObject = ""
+            response = model.generate_content(userInput)
+            print(f"[Teni]: {response.text}")
             
 
 # testing the time object (datetime type) within our confirmation message creation 
