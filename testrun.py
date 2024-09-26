@@ -287,7 +287,7 @@ def proto1():
                     eventObject['description'], 
                     eventObject['start']
                 )
-                sendEmail(confirmationMsg, eventObject['email'])
+                # sendEmail(confirmationMsg, eventObject['email'])
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
 
@@ -309,6 +309,7 @@ def proto2():
     print("Initializing the delete event scenario chat")
     model = initializeChatModel() 
     intentModel = initializeClassificationModel() 
+    intentObject = ""
 
     # plan out the delete event scenario before coding 
     """ 
@@ -320,13 +321,23 @@ def proto2():
             in delete scenario, we reference the 6 digit code for the specific event as lookup
 
             in edit scenario, we will also reference the 6 digit code for the specific event as look up to determine which specific event
-        )
-        
-        User should be making an delete appointment request [intent]
-        Prompt the end user to provide the 6 digit code that was emailed to them [maybe text message support in the future?]
-        
-
+        )        
     """
+
+    # determine if a delete intention was made
+    while True: 
+        # prompt the user for an input
+        userInput = input("[You]: ")
+
+        # if there is no intent
+        if not intentObject: 
+            intentObject = intentModel.generate_content(userInput)
+        
+        if intentObject.strip().lower() in ['delete']: 
+            print("[Teni]: Please provide the confirmation code you received with your appointment email to help me find your appointment!")
+            confirmationCode = input("[You]: ")
+
+            
 
 # testing the time object (datetime type) within our confirmation message creation 
 def testTime(): 

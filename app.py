@@ -171,7 +171,7 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    proto1()
+    # proto1()
 
     #** keep this as a basis for eventObject declaration
     # eventObject = {
@@ -185,24 +185,19 @@ if __name__ == "__main__":
     # }
     # eventObject['start'] = parser.parse(input('[You]: '))
     # displayConfirmationMessage(eventObject)
-
-
+    
     # userInput = ''
+    # intentModel = initializeClassificationModel()
+
     # while userInput not in ['quit', 'stop']: 
-    #     print("Enter a time")
     #     userInput = input('[You]: ')
-    #     startTime = parser.parse(userInput) 
 
-    #     print(f"This is the value of the checkDayState cause ??? {checkDayState(startTime)}")
+    #     if userInput.strip().lower() in ['quit', 'stop']: 
+    #         print('Ending the conversation')
+    #         break 
 
-    #     while checkWeekendCondition(startTime) == False and checkDayState(startTime) == False: 
-    #         print(f'[Teni]: Please choose a weekend as we are not taking appointments on weekdays at the moment.') if checkWeekendCondition(startTime) == False else print(f"[Teni]: Please choose a current day or time in the future")
-    #         listAvailableTimeValidMonth()
-    #         userInput = input("[You]: ")
-    #         startTime = parser.parse(userInput)
+    #     intentObject = intentModel.generate_content(userInput) # [delete, ]
+    #     print(f"This is the intentObject {intentObject.text}")
 
-    # listAvailableTimeValidMonth()
-
-
-
+    
 

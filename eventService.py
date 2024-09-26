@@ -675,3 +675,16 @@ def populateEventsForDay(datetimeObject):
 
     except Exception as e:
         print(f"[populateEventsForDay]: There was an error with gathering events for the day {e}") 
+
+def getEventObjectById(eventObjectId):
+    try: 
+        calendarService = initializeCalendarService() 
+
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventObjectId).execute()
+
+        return event 
+    
+    except Exception as e: 
+        print(f"There was an error retrieving the event object {e}")
+        return None 
+
