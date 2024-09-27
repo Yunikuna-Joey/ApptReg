@@ -3,9 +3,9 @@
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, getEventObjectById, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
-from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker
+from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
 
@@ -42,6 +42,7 @@ def proto1():
         'start': None, 
     }
     descriptionObject = ""
+    serviceOffsetTime = 0
 
     while True: 
         userInput = input("[You]: ")
@@ -69,7 +70,42 @@ def proto1():
                     userInput.strip() # remove the leading and trailing whitespaces from the user input 
                     
                     #* Parses the start_time field 
-                    if field == 'start': 
+                    if field == 'number': 
+                        while phoneNumberChecker(userInput) == False: 
+                            print("[Teni1]: I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567")
+                            userInput = input("[You]: ").strip()
+                        
+                        eventObject[field] = userInput
+                    
+                    elif field == 'email': 
+                        while emailChecker(userInput) == False: 
+                            print("[Teni]: I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails.")
+                            userInput = input("[You]: ").strip()
+                        
+                        eventObject[field] = userInput
+
+                    elif field == 'carModel':  
+                        while carDescriptionchecker(userInput) == False:  
+                            print("[Teni1]: I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)")
+                            userInput = input("[You]: ").strip()
+
+                        
+                        eventObject[field] = userInput
+
+                    elif field == 'description': 
+                        # remove the trailing and leading whitespaces before processing 
+                        userInput.strip()
+
+                        if 'both' in userInput or 'Both' in userInput: 
+                            userInput = 'Exterior & Interior'
+                            serviceList = userInput.split('&')
+                            offsetTime = [serviceToHours(element.strip().lower()) for element in serviceList]
+                            serviceOffsetTime = sum(offsetTime)
+                        
+                        serviceOffsetTime = serviceToHours(userInput)
+                        eventObject[field] = userInput
+
+                    elif field == 'start': 
                         try:
                             # convert the user input into a naive datetime object 
                             startTime = parser.parse(userInput)
@@ -102,26 +138,26 @@ def proto1():
 
                             scheduledEventList = populateEventsForDay(startTime)
                             
-                            # modStartTime = startTime
-                            # newStartTime = modStartTime.replace(tzinfo=ZoneInfo('America/Los_Angeles'))
                             newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
                             
-                            # checks for all the events in
+                            # checks the requested time from the end user against all of the events in the eventList for the day 
                             while any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList): 
                                 print(f"[Teni]: Your requested time is not available. Here are the available times")
-                                # listAvailableTimeMonth(startTime)
+    
                                 listAvailableTimeValidMonth()
                                 print("[Teni]: Please choose a date/time that works for you in the format: (September 22 at 12PM)")
                                 userInput = input("[You]: ")
                                 startTime = parser.parse(userInput)
 
-                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False: 
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime, serviceOffsetTime) == False: 
                                     if checkWeekendCondition(startTime) == False:
                                         print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
                                     elif checkDayState(startTime) == False:
                                         print("[Teni]: Please choose a valid day not in the past.")
                                     elif checkWorkHour(startTime) == False:
                                         print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+                                    elif isTimeAvailable(startTime) == False: 
+                                        print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
                                     userInput = input("[You]: ")
                                     startTime = parser.parse(userInput)
@@ -134,27 +170,6 @@ def proto1():
                         except (ValueError, TypeError): 
                             print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
                             continue
-                    elif field == 'email': 
-                        while emailChecker(userInput) == False: 
-                            print("[Teni]: I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails.")
-                            userInput = input("[You]: ").strip()
-                        
-                        eventObject[field] = userInput
-
-                    elif field == 'carModel':  
-                        while carDescriptionchecker(userInput) == False:  
-                            print("[Teni1]: I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)")
-                            userInput = input("[You]: ").strip()
-
-                        
-                        eventObject[field] = userInput
-                    
-                    elif field == 'number': 
-                        while phoneNumberChecker(userInput) == False: 
-                            print("[Teni1]: I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567")
-                            userInput = input("[You]: ").strip()
-                        
-                        eventObject[field] = userInput
 
                     else:  
                         # removes the trailing and leading whitespaces 
@@ -162,10 +177,10 @@ def proto1():
                         # print(f"This is the value of userInput {userInput}")
                         
                         # modifying/processing userInput 
-                        if 'facility' in userInput:
+                        if 'facility' in userInput and field == 'location':
                             userInput = 'Onsite Appointment'
                         
-                        elif 'both' in userInput: 
+                        if 'both' in userInput and field == 'description': 
                             userInput = 'Exterior & Interior'
                     
                         eventObject[field] = userInput
@@ -205,18 +220,41 @@ def proto1():
                         newInput = input("[You]: ")
                         newInput.strip() # remove the leading and trailing whitespaces before processing in our back-end functions
 
-                        if field == 'start': 
+                        if field == 'number':
+                            while not phoneNumberChecker(newInput):
+                                print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
+                                newInput = input("[You]: ").strip()
+                            eventObject[field] = newInput
+                        
+                        elif field == 'email':
+                            while not emailChecker(newInput):
+                                print("[Teni]: Invalid email format. Please enter a valid email address.")
+                                newInput = input("[You]: ").strip()
+                            eventObject[field] = newInput
+
+                        elif field == 'carModel':
+                            while not carDescriptionchecker(newInput):
+                                print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
+                                newInput = input("[You]: ").strip()
+                            eventObject[field] = newInput
+                        
+                        elif field == 'description': 
+                            print("We need something here.")
+
+                        elif field == 'start': 
                             try: 
                                 startTime = parser.parse(newInput) 
 
                                 # check if the requested day is a weekend 
-                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False: 
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime) == False: 
                                     if checkWeekendCondition(startTime) == False:
                                         print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
                                     elif checkDayState(startTime) == False:
                                         print("[Teni]: Please choose a valid day not in the past.")
                                     elif checkWorkHour(startTime) == False:
                                         print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+                                    elif isTimeAvailable(startTime) == False: 
+                                        print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
                                     newInput = input("[You]: ").strip()
                                     startTime = parser.parse(newInput)
@@ -239,24 +277,6 @@ def proto1():
                             except (ValueError, TypeError):
                                 print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
                                 continue
-
-                        elif field == 'email':
-                            while not emailChecker(newInput):
-                                print("[Teni]: Invalid email format. Please enter a valid email address.")
-                                newInput = input("[You]: ").strip()
-                            eventObject[field] = newInput
-
-                        elif field == 'carModel':
-                            while not carDescriptionchecker(newInput):
-                                print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
-                                newInput = input("[You]: ").strip()
-                            eventObject[field] = newInput
-
-                        elif field == 'number':
-                            while not phoneNumberChecker(newInput):
-                                print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
-                                newInput = input("[You]: ").strip()
-                            eventObject[field] = newInput
 
                         else:
                             # For generic fields like name, location, etc.
@@ -291,7 +311,7 @@ def proto1():
                     eventObject['description'], 
                     eventObject['start']
                 )
-                sendEmail(confirmationMsg, eventObject['email'])
+                # sendEmail(confirmationMsg, eventObject['email'])
 
                 print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
 
