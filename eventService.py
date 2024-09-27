@@ -341,8 +341,8 @@ def listAvailableTimeValidMonth():
                             # If the event starts after the workStart, keep the time before the event
                             if workStart < eventStart: 
                                 #* the timedelta here should be replaced with the type of cleaning [interior/exterior = 1hr, both = 2hr]
-                                newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
-                                # newAvailableTimes.append((workStart, eventStart))
+                                # newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
+                                newAvailableTimes.append((workStart, eventStart))
                             
                             # If the event ends before the workEnd, keep the time after the event
                             if eventEnd < workEnd: 
@@ -522,7 +522,7 @@ def createEventObjectExample():
     print("[createEventObject]: Ran successsfully")
     return eventObject
     
-def createEventObject(carType, location, description, start):
+def createEventObject(carType, location, description, start, duration):
     print(f'This is start time in isoformat {start.isoformat()}')
     eventObject = { 
         'summary': carType, 
@@ -533,7 +533,7 @@ def createEventObject(carType, location, description, start):
             'timeZone': 'America/Los_Angeles',
         },
         'end': {
-            'dateTime': (start + timedelta(hours=1)).isoformat(),
+            'dateTime': (start + timedelta(hours=duration)).isoformat(),
             'timeZone': 'America/Los_Angeles', 
         }
     }

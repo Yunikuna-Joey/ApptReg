@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 
-from helper import convertDateTime
+from helper import convertDateTime, serviceToHours
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
@@ -55,7 +55,7 @@ def createConfirmationMessageExample():
     print("[createMessageHeader]: Message object created successfully.")
 
 # return message
-def createConfirmationMessage(eventId, customerName, customerEmail, vehicleInfo, address, cleanType, startTime): 
+def createConfirmationMessage(eventId, customerName, customerEmail, vehicleInfo, address, cleanType, startTime, duration): 
     #* setup MIME 
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
@@ -77,7 +77,7 @@ Please keep this code safe, as you can use it to modify or cancel your appointme
 Car: <b>{vehicleInfo}</b><br>
 Location: <b>{address}</b><br>
 Service: <b>{cleanType}</b><br>
-Time: <b>{convertDateTime(startTime)}</b></p>
+Time: <b>{convertDateTime(startTime, duration)}</b></p>
 
 <p>Feel free to add this event to your Google Calendar automatically by clicking the .ics file.</p>
 
@@ -94,7 +94,7 @@ Ten (Just an AutoBot)</p>
 
     tzInfo = ZoneInfo('America/Los_Angeles')
     eventStart = startTime.astimezone(tzInfo)
-    eventEnd = (startTime + timedelta(hours=1)) 
+    eventEnd = (startTime + timedelta(hours=duration)) 
 
     formatStart = eventStart.strftime('%Y%m%dT%H%M%S')
     formatEnd = eventEnd.strftime('%Y%m%dT%H%M%S')
@@ -146,7 +146,7 @@ This message is to inform you of your appointment cancellation.
 Cancelled appointment details: 
 **Car**: {vehicleInfo} 
 **Type of Cleaning**: {cleanType}
-**Time**: {convertDateTime(startTime)}
+**Time**: {convertDateTime(startTime, serviceToHours(cleanType))}
 
 Feel free to re-book your appointment to a time that works best for you. 
 Have a great day, 

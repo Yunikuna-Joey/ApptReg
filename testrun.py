@@ -101,9 +101,10 @@ def proto1():
                             serviceList = userInput.split('&')
                             offsetTime = [serviceToHours(element.strip().lower()) for element in serviceList]
                             serviceOffsetTime = sum(offsetTime)
-                        
-                        serviceOffsetTime = serviceToHours(userInput)
-                        eventObject[field] = userInput
+                            
+                        else: 
+                            serviceOffsetTime = serviceToHours(userInput)
+                            eventObject[field] = userInput
 
                     elif field == 'start': 
                         try:
@@ -156,7 +157,7 @@ def proto1():
                                         print("[Teni]: Please choose a valid day not in the past.")
                                     elif checkWorkHour(startTime) == False:
                                         print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
-                                    elif isTimeAvailable(startTime) == False: 
+                                    elif isTimeAvailable(startTime, serviceOffsetTime) == False: 
                                         print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
                                     userInput = input("[You]: ")
@@ -186,6 +187,7 @@ def proto1():
                         eventObject[field] = userInput
 
                 print(f'This is the current values of eventObject {eventObject}')
+                print(f"This is the current value of serviceOffsetHour {serviceOffsetTime}")
 
             # create a hashmap that maps the field to natural language 
             languageFieldMap = { 
@@ -201,7 +203,7 @@ def proto1():
             #*********************************************CONFIRMATION SECTION************************************************************
             while userInput != 'done':
                 # ensure that everything looks right to the user before packing the event object
-                displayConfirmationMessage(eventObject) 
+                displayConfirmationMessage(eventObject, serviceOffsetTime) 
 
                 print("[Teni]: Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'.")
                 userInput = input('[You]: ').lower().strip()
@@ -262,7 +264,7 @@ def proto1():
                                     # if the current startTime does not allow for the new duration, then we prompt the user to also pick a new time 
                                     # otherwise, continue with just changing the service type from one to another 
                                 if isTimeAvailable(eventObject['start'], serviceOffsetTime) == False: 
-                                    print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(eventObject['start'])}")
+                                    print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(eventObject['start'], serviceOffsetTime)}")
                                     print(f"[Teni]: Please choose another time that works best for you as well as make sure there is enough time available to finish ({serviceOffsetTime} hours.)")
                                     
                                     # list the available times for this month from the concurrent day  
@@ -278,13 +280,13 @@ def proto1():
                                             print("[Teni]: Please choose a valid day not in the past.")
                                         elif checkWorkHour(newTime) == False:
                                             print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
-                                        elif isTimeAvailable(newTime) == False: 
+                                        elif isTimeAvailable(newTime, serviceOffsetTime) == False: 
                                             print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
                                         newInput = input("[You]: ").strip()
                                         newTime = parser.parse(newInput)
                                 
-                                eventObject['start'] = newTime
+                                    eventObject['start'] = newTime
                             
                             # After we check and finish finding a valid time 
                             # update the service 
@@ -296,14 +298,14 @@ def proto1():
                                 startTime = parser.parse(newInput) 
 
                                 # check if the requested day is a weekend 
-                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime) == False: 
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime, serviceOffsetTime) == False: 
                                     if checkWeekendCondition(startTime) == False:
                                         print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
                                     elif checkDayState(startTime) == False:
                                         print("[Teni]: Please choose a valid day not in the past.")
                                     elif checkWorkHour(startTime) == False:
                                         print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
-                                    elif isTimeAvailable(startTime) == False: 
+                                    elif isTimeAvailable(startTime, serviceOffsetTime) == False: 
                                         print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
                                     newInput = input("[You]: ").strip()
@@ -344,7 +346,8 @@ def proto1():
                     eventObject['name'], 
                     eventObject['location'], 
                     descriptionObject, 
-                    eventObject['start']
+                    eventObject['start'], 
+                    serviceOffsetTime
                 )
                 # This will create the actual calendar event in the backend 
                 confirmationEvent = addEvent(confirmationObject)
@@ -359,11 +362,12 @@ def proto1():
                     eventObject['carModel'], 
                     eventObject['location'], 
                     eventObject['description'], 
-                    eventObject['start']
+                    eventObject['start'], 
+                    serviceOffsetTime
                 )
                 # sendEmail(confirmationMsg, eventObject['email'])
 
-                print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'])}!")
+                print(f"[Teni]: You have successfully booked your appointment for {convertDateTime(eventObject['start'], serviceOffsetTime)}!")
 
                 # reset back to blank state after booking appointment
                 resetObjectValues(intentObject)

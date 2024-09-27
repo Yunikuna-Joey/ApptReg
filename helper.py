@@ -7,7 +7,7 @@ import re
 import dns.resolver
 
 # converts datetime objects for the listAvailable function 
-def convertDateTime(dateTimeObject): 
+def convertDateTime(dateTimeObject, duration): 
     # this looks like 'September 15, 2024 at 6:00AM'
     # formattedTime = dateTimeObject.strftime("%B %d, %Y at %-I:%M %p")
 
@@ -18,14 +18,14 @@ def convertDateTime(dateTimeObject):
     if platform.system() == 'Windows':
         # Use the format without `%-` for Windows (leading zeros remain)
         formattedTime = dateTimeObject.strftime("%B %d, %Y at %I:%M %p")
-        endTime = dateTimeObject + timedelta(hours=1)
+        endTime = dateTimeObject + timedelta(hours=duration)
         formattedEndTime = endTime.strftime("%I:%M %p")
         
     # MacOS strftime manipulation
     else:
         # Use `%-I` for Unix-based systems (no leading zero in hour)
         formattedTime = dateTimeObject.strftime("%B %d, %Y at %-I:%M %p")
-        endTime = dateTimeObject + timedelta(hours=1)
+        endTime = dateTimeObject + timedelta(hours=duration)
         formattedEndTime = endTime.strftime("%-I:%M %p")
 
     return f"{formattedTime} - {formattedEndTime}" 
@@ -88,7 +88,7 @@ def carDescriptionchecker(carDescription):
 
     return True if 1980 <= year <= currYear else False 
 
-def displayConfirmationMessage(eventObject): 
+def displayConfirmationMessage(eventObject, duration): 
     confirmationMsg = f"""
 Please confirm your details - 
 Name: {eventObject['name']}
@@ -98,7 +98,7 @@ Car: {eventObject['carModel']}
 Location: {eventObject['location']}
 Cleaning: {eventObject['description']}
 Date: {eventObject['start'].strftime('%B %d, %Y')}
-Time: {eventObject['start'].strftime('%I:%M %p')} - {(eventObject['start'] + timedelta(hours=1)).strftime('%I:%M %p')}
+Time: {eventObject['start'].strftime('%I:%M %p')} - {(eventObject['start'] + timedelta(hours=duration)).strftime('%I:%M %p')}
     """
     print(confirmationMsg)
     # return confirmationMsg
