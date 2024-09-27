@@ -813,11 +813,11 @@ def populateAvailableSlots():
     except Exception as e: 
         print(f"[listAvailableTimeValidMonth]: There was an error displaying the available weekend times {e}") 
 
-def isTimeAvailable(startTime, duration): 
-    eventStart = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
-    eventEnd = startTime + timedelta(hours=duration)
+def isTimeAvailable(startTimeObject, duration): 
+    eventStart = startTimeObject.astimezone(ZoneInfo('America/Los_Angeles'))
+    eventEnd = eventStart + timedelta(hours=duration)
 
-    eventDate = startTime.strftime('%Y-%m-%d')
+    eventDate = startTimeObject.strftime('%Y-%m-%d')
 
     availableSlots = populateAvailableSlots()
 

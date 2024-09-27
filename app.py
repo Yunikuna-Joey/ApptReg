@@ -171,7 +171,7 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    # proto1() # add event scenario
+    proto1() # add event scenario
     # proto2() # delete event scenario
 
     #** keep this as a basis for eventObject declaration
@@ -203,9 +203,9 @@ if __name__ == "__main__":
     #     print(f"This is the intentObject {intentObject.text}")
 
     # September 29 @2PM 
-    requestStart = datetime(2024, 9, 29, 9, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
-    duration = 2 
+    # requestStart = datetime(2024, 9, 29, 9, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
+    # duration = 2 
 
-    print(isTimeAvailable(requestStart, duration)) 
+    # print(isTimeAvailable(requestStart, duration)) 
 
     # listAvailableTimeValidMonth()

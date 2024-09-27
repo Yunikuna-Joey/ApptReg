@@ -198,6 +198,7 @@ def proto1():
                 'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
             }
 
+            #*********************************************CONFIRMATION SECTION************************************************************
             while userInput != 'done':
                 # ensure that everything looks right to the user before packing the event object
                 displayConfirmationMessage(eventObject) 
@@ -239,7 +240,56 @@ def proto1():
                             eventObject[field] = newInput
                         
                         elif field == 'description': 
-                            print("We need something here.")
+                             # if we change the service type, we need to change the offset hours 
+                            prevOffsetTime = serviceOffsetTime              # save a copy of the old duration 
+
+                            # process differently if we switched to both
+                            if 'both' in newInput or 'Both' in newInput: 
+                                newInput = "Exterior & Interior" 
+                                serviceList = newInput.split('&')
+                                calculation = [serviceToHours(element.strip().lower()) for element in serviceList] 
+                                serviceOffsetTime = sum(calculation)
+
+                            else: 
+                                serviceOffsetTime = serviceToHours(newInput)    
+                            
+                            print(f"prev: {prevOffsetTime}, new: {serviceOffsetTime}")
+                            print(f"This is eventObject startTime during confirmation re-check {eventObject['start']}")
+
+                            # if the new duration is greater than the previous 
+                            if serviceOffsetTime > prevOffsetTime: 
+                                # we need to check if the current startTime allows for the new duration without conflicts
+                                    # if the current startTime does not allow for the new duration, then we prompt the user to also pick a new time 
+                                    # otherwise, continue with just changing the service type from one to another 
+                                if isTimeAvailable(eventObject['start'], serviceOffsetTime) == False: 
+                                    print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(eventObject['start'])}")
+                                    print(f"[Teni]: Please choose another time that works best for you as well as make sure there is enough time available to finish ({serviceOffsetTime} hours.)")
+                                    
+                                    # list the available times for this month from the concurrent day  
+                                    listAvailableTimeValidMonth() 
+
+                                    newUserInputTime = input("[You]: ").strip()
+                                    newTime = parser.parse(newUserInputTime)
+
+                                    while checkWeekendCondition(newTime) == False or checkDayState(newTime) == False or checkWorkHour(newTime) == False or isTimeAvailable(newTime, serviceOffsetTime) == False: 
+                                        if checkWeekendCondition(newTime) == False:
+                                            print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                        elif checkDayState(newTime) == False:
+                                            print("[Teni]: Please choose a valid day not in the past.")
+                                        elif checkWorkHour(newTime) == False:
+                                            print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+                                        elif isTimeAvailable(newTime) == False: 
+                                            print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
+
+                                        newInput = input("[You]: ").strip()
+                                        newTime = parser.parse(newInput)
+                                
+                                eventObject['start'] = newTime
+                            
+                            # After we check and finish finding a valid time 
+                            # update the service 
+                            eventObject['description'] = newInput
+
 
                         elif field == 'start': 
                             try: 
