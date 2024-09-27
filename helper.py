@@ -102,3 +102,18 @@ Time: {eventObject['start'].strftime('%I:%M %p')} - {(eventObject['start'] + tim
     """
     print(confirmationMsg)
     # return confirmationMsg
+
+def serviceToHours(serviceType): 
+    serviceMap = { 
+        'interior': 1, 
+        'exterior': 1,
+    }
+
+    if serviceType in ['interior']: 
+        return serviceMap.get(serviceType, 0) 
+    
+    elif serviceType in ['exterior']: 
+        return serviceMap.get(serviceType, 0) 
+
+    else: 
+        return serviceMap.get(serviceType, 0) + serviceMap.get(serviceType, 0)
