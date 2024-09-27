@@ -24,6 +24,9 @@ def testRun():
 
 # successful run of adding event to calendar [addition]
 def proto1(): 
+    """
+    Need to add the service being requested : time that needs to be accounted for
+    """
     print('Initializing the chat')
     
     model = initializeChatModel()
@@ -306,6 +309,7 @@ def proto1():
             print(f"[Teni]: {response.text}")
             print(f"This is intentObject after resetting the value. {intentObject}")
 
+# successful run of deleting event in calendar [delete]
 def proto2(): 
     print("Initializing the delete event scenario chat")
     model = initializeChatModel() 
@@ -374,6 +378,20 @@ def proto2():
             response = model.generate_content(userInput)
             print(f"[Teni]: {response.text}")
             
+def proto3(): 
+    """ 
+    Prompt for an intent [modify, update] 
+    ask for the confirmation code / eventId 
+    change a field of the eventObject
+    confirm the changes 
+    push changes into system
+    """
+    print("Initializing the update event scenario chat")
+    model = initializeChatModel() 
+    intentModel = initializeClassificationModel() 
+    intentObject = ""
+
+    
 
 # testing the time object (datetime type) within our confirmation message creation 
 def testTime(): 
