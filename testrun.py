@@ -93,14 +93,12 @@ def proto1():
                         eventObject[field] = userInput
 
                     elif field == 'description': 
-                        # remove the trailing and leading whitespaces before processing 
-                        userInput.strip()
-
                         if 'both' in userInput or 'Both' in userInput: 
                             userInput = 'Exterior & Interior'
                             serviceList = userInput.split('&')
                             offsetTime = [serviceToHours(element.strip().lower()) for element in serviceList]
                             serviceOffsetTime = sum(offsetTime)
+                            eventObject[field] = userInput
                             
                         else: 
                             serviceOffsetTime = serviceToHours(userInput)
@@ -251,6 +249,7 @@ def proto1():
                                 serviceList = newInput.split('&')
                                 calculation = [serviceToHours(element.strip().lower()) for element in serviceList] 
                                 serviceOffsetTime = sum(calculation)
+                                eventObject[field] = userInput
 
                             else: 
                                 serviceOffsetTime = serviceToHours(newInput)    
@@ -374,7 +373,6 @@ def proto1():
                 resetObjectValues(descriptionObject)
                 resetObjectValues(eventObject)
                 break
-        
         # otherwise, respond back to user as normal [reset the intentObject if a non-valid one was made as well]
         else: 
             # reset the intent object 
