@@ -171,8 +171,9 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    proto1() # add event scenario
+    # proto1() # add event scenario
     # proto2() # delete event scenario
+    # proto3()
 
     #** keep this as a basis for eventObject declaration
     # eventObject = {
@@ -201,6 +202,19 @@ if __name__ == "__main__":
 
     #     intentObject = intentModel.generate_content(userInput) # [delete, ]
     #     print(f"This is the intentObject {intentObject.text}")
+
+    userInput = ''
+    intentModel = initializeClassificationModel()
+
+    while userInput not in ['quit', 'stop']: 
+        userInput = input('[You]: ')
+
+        if userInput.strip().lower() in ['quit', 'stop']: 
+            print('Ending the conversation')
+            break 
+
+        intentObject = intentModel.generate_content(userInput) # [modify, ]
+        print(f"This is the intentObject {intentObject.text}")
 
     # September 29 @2PM 
     # requestStart = datetime(2024, 9, 29, 9, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
