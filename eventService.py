@@ -696,11 +696,14 @@ def getEventObjectById(eventObjectId):
 def displayEventObjectInfo(eventObject): 
     descriptionList = eventObject['description'].split('\n')
     dtObjectStart = datetime.fromisoformat(eventObject['start']['dateTime'])
+    dtObjectEnd = datetime.fromisoformat(eventObject['end']['dateTime'])
+
+    print(f"This is the value of start {dtObjectStart} and end {dtObjectEnd}")
 
     eventObjectInfo=f"""
 Name: {eventObject['summary']}
 Vehicle: {descriptionList[1]}
-Time: {convertDateTime(dtObjectStart)}
+Time: {convertDateTime(dtObjectStart, (dtObjectEnd - dtObjectStart) / 3600 )}
     """
     return eventObjectInfo
 

@@ -176,15 +176,16 @@ if __name__ == "__main__":
     # proto3()
 
     #** keep this as a basis for eventObject declaration
-    # eventObject = {
-    #     'name': 'Hinata', 
-    #     'number': '222-222-2222', 
-    #     'email': 'testing@email.com', 
-    #     'carModel': '2006 BMW 330i', 
-    #     'location': 'Facility', 
-    #     'description': 'Interior and Exterior', 
-    #     'start': ''
-    # }
+    eventObject = {
+        'name': 'Hinata', 
+        'number': '222-222-2222', 
+        'email': 'testing@email.com', 
+        'carModel': '2006 BMW 330i', 
+        'location': 'Facility', 
+        'description': 'Interior and Exterior', 
+        'start': datetime(2024, 9, 21, 10, 15, 0)
+    }
+    
     # eventObject['start'] = parser.parse(input('[You]: '))
     # msg = createBoldMsg('eventCodething', 'name', 'emailaddress', 'yup', '23812', 'both', eventObject['start'])
     # sendEmail(msg, 'lujoey68@gmail.com')
@@ -203,18 +204,18 @@ if __name__ == "__main__":
     #     intentObject = intentModel.generate_content(userInput) # [delete, ]
     #     print(f"This is the intentObject {intentObject.text}")
 
-    userInput = ''
-    intentModel = initializeClassificationModel()
+    # userInput = ''
+    # intentModel = initializeClassificationModel()
 
-    while userInput not in ['quit', 'stop']: 
-        userInput = input('[You]: ')
+    # while userInput not in ['quit', 'stop']: 
+    #     userInput = input('[You]: ')
 
-        if userInput.strip().lower() in ['quit', 'stop']: 
-            print('Ending the conversation')
-            break 
+    #     if userInput.strip().lower() in ['quit', 'stop']: 
+    #         print('Ending the conversation')
+    #         break 
 
-        intentObject = intentModel.generate_content(userInput) # [modify, ]
-        print(f"This is the intentObject {intentObject.text}")
+    #     intentObject = intentModel.generate_content(userInput) # [modify, ]
+    #     print(f"This is the intentObject {intentObject.text}")
 
     # September 29 @2PM 
     # requestStart = datetime(2024, 9, 29, 9, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
