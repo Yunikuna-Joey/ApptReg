@@ -73,7 +73,7 @@ def phoneNumberChecker(phoneNumber):
 def carDescriptionchecker(carDescription): 
     # give an upper bound of +1 to the current year [possibility]
     currYear = datetime.now().year + 1 
-    print(currYear)
+    # print(currYear)
 
     #* year/make/model [4 digit year, Car brand, car model]
     descriptionRegex = r'^(19\d{2}|20[01]\d|20[2-4]\d)\s+([A-Za-z]+(?:[ -][A-Za-z]+)*)\s+([A-Za-z0-9]+(?:[ -][A-Za-z0-9]+)*)$'
@@ -84,7 +84,7 @@ def carDescriptionchecker(carDescription):
         return False 
     
     year = int(match.group(1))
-    print(f"The value of year {year}")
+    # print(f"The value of year {year}")
 
     return True if 1980 <= year <= currYear else False 
 

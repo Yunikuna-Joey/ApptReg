@@ -566,6 +566,7 @@ def deleteEvent(eventId):
     except Exception as e: 
         print(f"[deleteEvent]: An error occurred-- {e}")
 
+# publish backend update for the startTime
 def editEvent(eventId, newStartTime, newEndTime): 
     try: 
         calendarService = initializeCalendarService() 
