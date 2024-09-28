@@ -462,6 +462,7 @@ def proto3():
     model = initializeChatModel() 
     intentModel = initializeClassificationModel() 
     intentObject = ""
+    eventObject = {}
     # create a hashmap that maps the field to natural language 
     languageFieldMap = { 
         'name': ['name', 'change name', 'update name'],
@@ -483,156 +484,178 @@ def proto3():
 
         # if the intent is deemed as modify 
         if intentObject.text.strip().lower() in ['modify']:
-            # prompt the user to enter a confirmation code
-            print("[Teni]: Please provide the confirmation code you received with your appointment email to help me find your appointment!")
-            confirmationCode = input("[You]: ")
+            # keep prompting the user for a valid confirmation code to pack the event object 
+            while not eventObject: 
+                print("[Teni]: Please provide the confirmation code you received with your appointment email to help me find your appointment!") 
+                confirmationCode = input("[You]: ")
 
-            eventObject = getEventObjectById(confirmationCode)              # pack the eventObject
-            eventObjectInfo = displayEventObjectInfo(eventObject)           # format the eventOBject info into readable 
+                eventObject = getEventObjectById(confirmationCode)
+                
+                if not eventObject: 
+                    print("There is no appointment with that confirmation code. Please check your code again.")
 
+            eventObjectInfo = displayEventObjectInfo(eventObject)           # format the eventOBject info into readable
             print(f"[Teni]: {eventObjectInfo}")
-            print(f"[Teni]: This is what I found with the confirmation code. Is this the appointment you would like to modify?")
+            print(f"[Teni]: This is what I found with the confirmation code. Is this the appointment you would like to modify?") 
             
             editConfirmationInput = input("[You]: ")
 
-            # if user indicates affirmative action towards modifying the specific event
-            if editConfirmationInput.strip().lower() in ['yes', 'correct', 'thats the one', 'yup', 'mhm']: 
-                # determine which field the user wants to edit
-                while userInput != 'done':
-                    # ensure that everything looks right to the user before packing the event object
-                    displayConfirmationMessage(eventObject, serviceOffsetTime) 
+            # confirming and determining the correct appointment to start modifying
+            while editConfirmationInput not in ['yes', 'correct', 'thats the one', 'yup', 'mhm']:
+                print("[Teni]: Please enter your confirmation code for your specific appointment! If you'd like to stop now, type 'done'")
+                confirmationCode = input("[You]: ")
 
-                    print("[Teni]: Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'.")
-                    userInput = input('[You]: ').lower().strip()
+                # exit condition 
+                if confirmationCode.strip().lower() == 'done':
+                    print("[Teni]: Please come back when you find your appointment code!")
+                    # reset the parmeters as we are breaking out of the modify intent
+                    resetObjectValues(intentObject)
+                    eventObject = {}
+                    break 
+                
+                eventObject = getEventObjectById(confirmationCode)
+                while not eventObject: 
+                    print("[Teni]: There is no appointment with that code. Try again.")
+                    confirmationCode = input("[You]: ")
+                    eventObject = getEventObjectById(confirmationCode)
+                
+                print(f"[Teni]: {eventObjectInfo}")
+                print(f"[Teni]: This is what I found with the confirmation code. Is this the appointment you would like to modify?") 
+                editConfirmationInput = input("[You]: ")
+            
+            #* after the object is confirmed, parse the user on what they would like to change
+            while userInput.strip().lower() not in ['done']:
+                print("[Teni]: What would you like to change? If you are done, simply type 'done'")    
+                userInput = input("[You]: ")
 
-                    # iterate through key and values
-                    for field, keywords in languageFieldMap.items(): 
-                        # if any of the keyword is in the user input [through looping throught the values]
-                        if any(keyword in userInput for keyword in keywords): 
-                            # generate the correct prompt for the field the user wants to edit 
-                            prompt = generatePrompt(field)
-                            print(f"[Teni]: {prompt}")
+                # iterate through key and values
+                for field, keywords in languageFieldMap.items(): 
+                    # if any of the keyword is in the user input [through looping throught the values]
+                    if any(keyword in userInput for keyword in keywords): 
+                        # generate the correct prompt for the field the user wants to edit 
+                        prompt = generatePrompt(field)
+                        print(f"[Teni]: {prompt}")
 
-                            # provide the available times again if user is looking to re-do the time 
-                            if field == 'start': 
-                                listAvailableTimeValidMonth()
+                        # provide the available times again if user is looking to re-do the time 
+                        if field == 'start': 
+                            listAvailableTimeValidMonth()
 
-                            newInput = input("[You]: ")
-                            newInput.strip() # remove the leading and trailing whitespaces before processing in our back-end functions
+                        newInput = input("[You]: ")
+                        newInput.strip() # remove the leading and trailing whitespaces before processing in our back-end functions
 
-                            if field == 'number':
-                                while not phoneNumberChecker(newInput):
-                                    print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
-                                    newInput = input("[You]: ").strip()
-                                eventObject[field] = newInput
+                        if field == 'number':
+                            while not phoneNumberChecker(newInput):
+                                print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
+                                newInput = input("[You]: ").strip()
+                            eventObject[field] = newInput
+                        
+                        elif field == 'email':
+                            while not emailChecker(newInput):
+                                print("[Teni]: Invalid email format. Please enter a valid email address.")
+                                newInput = input("[You]: ").strip()
+                            eventObject[field] = newInput
+
+                        elif field == 'carModel':
+                            while not carDescriptionchecker(newInput):
+                                print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
+                                newInput = input("[You]: ").strip()
+                            eventObject[field] = newInput
+                        
+                        elif field == 'description': 
+                            # if we change the service type, we need to change the offset hours 
+                            prevOffsetTime = serviceOffsetTime              # save a copy of the old duration 
+
+                            # process differently if we switched to both
+                            if 'both' in newInput or 'Both' in newInput: 
+                                newInput = "Exterior & Interior" 
+                                serviceList = newInput.split('&')
+                                calculation = [serviceToHours(element.strip().lower()) for element in serviceList] 
+                                serviceOffsetTime = sum(calculation)
+                                eventObject[field] = userInput
+
+                            else: 
+                                serviceOffsetTime = serviceToHours(newInput)    
                             
-                            elif field == 'email':
-                                while not emailChecker(newInput):
-                                    print("[Teni]: Invalid email format. Please enter a valid email address.")
-                                    newInput = input("[You]: ").strip()
-                                eventObject[field] = newInput
+                            print(f"prev: {prevOffsetTime}, new: {serviceOffsetTime}")
+                            print(f"This is eventObject startTime during confirmation re-check {eventObject['start']}")
 
-                            elif field == 'carModel':
-                                while not carDescriptionchecker(newInput):
-                                    print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
-                                    newInput = input("[You]: ").strip()
-                                eventObject[field] = newInput
-                            
-                            elif field == 'description': 
-                                # if we change the service type, we need to change the offset hours 
-                                prevOffsetTime = serviceOffsetTime              # save a copy of the old duration 
-
-                                # process differently if we switched to both
-                                if 'both' in newInput or 'Both' in newInput: 
-                                    newInput = "Exterior & Interior" 
-                                    serviceList = newInput.split('&')
-                                    calculation = [serviceToHours(element.strip().lower()) for element in serviceList] 
-                                    serviceOffsetTime = sum(calculation)
-                                    eventObject[field] = userInput
-
-                                else: 
-                                    serviceOffsetTime = serviceToHours(newInput)    
-                                
-                                print(f"prev: {prevOffsetTime}, new: {serviceOffsetTime}")
-                                print(f"This is eventObject startTime during confirmation re-check {eventObject['start']}")
-
-                                # if the new duration is greater than the previous 
-                                if serviceOffsetTime > prevOffsetTime: 
-                                    # we need to check if the current startTime allows for the new duration without conflicts
-                                        # if the current startTime does not allow for the new duration, then we prompt the user to also pick a new time 
-                                        # otherwise, continue with just changing the service type from one to another 
-                                    if isTimeAvailable(eventObject['start'], serviceOffsetTime) == False: 
-                                        print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(eventObject['start'], serviceOffsetTime)}")
-                                        print(f"[Teni]: Please choose another time that works best for you as well as make sure there is enough time available to finish ({serviceOffsetTime} hours.)")
-                                        
-                                        # list the available times for this month from the concurrent day  
-                                        listAvailableTimeValidMonth() 
-
-                                        newUserInputTime = input("[You]: ").strip()
-                                        newTime = parser.parse(newUserInputTime)
-
-                                        while checkWeekendCondition(newTime) == False or checkDayState(newTime) == False or checkWorkHour(newTime) == False or isTimeAvailable(newTime, serviceOffsetTime) == False: 
-                                            if checkWeekendCondition(newTime) == False:
-                                                print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
-                                            elif checkDayState(newTime) == False:
-                                                print("[Teni]: Please choose a valid day not in the past.")
-                                            elif checkWorkHour(newTime) == False:
-                                                print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
-                                            elif isTimeAvailable(newTime, serviceOffsetTime) == False: 
-                                                print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
-
-                                            newInput = input("[You]: ").strip()
-                                            newTime = parser.parse(newInput)
+                            # if the new duration is greater than the previous 
+                            if serviceOffsetTime > prevOffsetTime: 
+                                # we need to check if the current startTime allows for the new duration without conflicts
+                                    # if the current startTime does not allow for the new duration, then we prompt the user to also pick a new time 
+                                    # otherwise, continue with just changing the service type from one to another 
+                                if isTimeAvailable(eventObject['start'], serviceOffsetTime) == False: 
+                                    print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(eventObject['start'], serviceOffsetTime)}")
+                                    print(f"[Teni]: Please choose another time that works best for you as well as make sure there is enough time available to finish ({serviceOffsetTime} hours.)")
                                     
-                                        eventObject['start'] = newTime
-                                
-                                # After we check and finish finding a valid time 
-                                # update the service 
-                                eventObject['description'] = newInput
+                                    # list the available times for this month from the concurrent day  
+                                    listAvailableTimeValidMonth() 
 
+                                    newUserInputTime = input("[You]: ").strip()
+                                    newTime = parser.parse(newUserInputTime)
 
-                            elif field == 'start': 
-                                try: 
-                                    startTime = parser.parse(newInput) 
-
-                                    # check if the requested day is a weekend 
-                                    while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime, serviceOffsetTime) == False: 
-                                        if checkWeekendCondition(startTime) == False:
+                                    while checkWeekendCondition(newTime) == False or checkDayState(newTime) == False or checkWorkHour(newTime) == False or isTimeAvailable(newTime, serviceOffsetTime) == False: 
+                                        if checkWeekendCondition(newTime) == False:
                                             print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
-                                        elif checkDayState(startTime) == False:
+                                        elif checkDayState(newTime) == False:
                                             print("[Teni]: Please choose a valid day not in the past.")
-                                        elif checkWorkHour(startTime) == False:
+                                        elif checkWorkHour(newTime) == False:
                                             print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
-                                        elif isTimeAvailable(startTime, serviceOffsetTime) == False: 
+                                        elif isTimeAvailable(newTime, serviceOffsetTime) == False: 
                                             print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
                                         newInput = input("[You]: ").strip()
-                                        startTime = parser.parse(newInput)
+                                        newTime = parser.parse(newInput)
+                                
+                                    eventObject['start'] = newTime
+                            
+                            # After we check and finish finding a valid time 
+                            # update the service 
+                            eventObject['description'] = newInput
 
-                                    scheduledEventList = populateEventsForDay(startTime)
 
-                                    newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
+                        elif field == 'start': 
+                            try: 
+                                startTime = parser.parse(newInput) 
 
-                                    while any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList): 
-                                        print(f"[Teni]: Your requested time is not available. Here are the available times")
-                                        # listAvailableTimeMonth(startTime)
-                                        listAvailableTimeValidMonth()
-                                        print("[Teni]: Please choose a date/time that works for you in the format: (September 22 at 12PM)")
-                                        newInput = input("[You]: ").strip()
-                                        startTime = parser.parse(newInput)
-                                        newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
-                                    
-                                    eventObject['start'] = startTime
+                                # check if the requested day is a weekend 
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime, serviceOffsetTime) == False: 
+                                    if checkWeekendCondition(startTime) == False:
+                                        print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
+                                    elif checkDayState(startTime) == False:
+                                        print("[Teni]: Please choose a valid day not in the past.")
+                                    elif checkWorkHour(startTime) == False:
+                                        print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
+                                    elif isTimeAvailable(startTime, serviceOffsetTime) == False: 
+                                        print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
 
-                                except (ValueError, TypeError):
-                                    print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
-                                    continue
+                                    newInput = input("[You]: ").strip()
+                                    startTime = parser.parse(newInput)
 
-                            else:
-                                # For generic fields like name, location, etc.
-                                eventObject[field] = newInput.strip()
+                                scheduledEventList = populateEventsForDay(startTime)
 
-                            print(f"[Teni]: The {field} has been updated.")
+                                newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
+
+                                while any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList): 
+                                    print(f"[Teni]: Your requested time is not available. Here are the available times")
+                                    # listAvailableTimeMonth(startTime)
+                                    listAvailableTimeValidMonth()
+                                    print("[Teni]: Please choose a date/time that works for you in the format: (September 22 at 12PM)")
+                                    newInput = input("[You]: ").strip()
+                                    startTime = parser.parse(newInput)
+                                    newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
+                                
+                                eventObject['start'] = startTime
+
+                            except (ValueError, TypeError):
+                                print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
+                                continue
+
+                        else:
+                            # For generic fields like name, location, etc.
+                            eventObject[field] = newInput.strip()
+
+                        print(f"[Teni]: The {field} has been updated.")
 
         else: 
             # reset the intent object 

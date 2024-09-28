@@ -698,14 +698,18 @@ def displayEventObjectInfo(eventObject):
     dtObjectStart = datetime.fromisoformat(eventObject['start']['dateTime'])
     dtObjectEnd = datetime.fromisoformat(eventObject['end']['dateTime'])
 
-    print(f"This is the value of start {dtObjectStart} and end {dtObjectEnd}")
+    var1 = (dtObjectEnd - dtObjectStart).total_seconds()           # find the difference in seconds
+    diffHours = var1 / 3600                                        # convert the difference from seconds --> hours
+    durationHour = int(diffHours)                                  # convert the object into integer
+
 
     eventObjectInfo=f"""
 Name: {eventObject['summary']}
 Vehicle: {descriptionList[1]}
-Time: {convertDateTime(dtObjectStart, (dtObjectEnd - dtObjectStart) / 3600 )}
+Time: {convertDateTime(dtObjectStart, durationHour)}
     """
     return eventObjectInfo
+
 
 def populateAvailableSlots(): 
     try: 

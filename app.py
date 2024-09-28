@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
     # proto1() # add event scenario
     # proto2() # delete event scenario
-    # proto3()
+    proto3()
 
     #** keep this as a basis for eventObject declaration
     eventObject = {
