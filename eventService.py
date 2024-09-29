@@ -586,6 +586,32 @@ def editEvent(eventId, newStartTime, newEndTime):
     except Exception as e: 
         print(f"[editEvent]: An error occurred-- {e}")
 
+def editNumber(eventId, number): 
+    try: 
+        calendarService = initializeCalendarService()
+
+        # get the current event details 
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+
+        print(f"[editNumber]: This is eventObject {event}")
+
+        # the description key has 4 points of information [serviceType, carModel, number, email]
+        splitList = event['description'].split('\n')
+        # it will always follow the same pattern so we can go straight to the index 
+        splitList[2] = number
+
+        finalDescription = '\n'.join(splitList)            # put the list back together 
+
+        event['description'] = finalDescription
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+
+        print(f"Successfully updated event: {updatedEventObject.get('htmlLink')}")
+
+    except Exception as e: 
+        print(f"[editNumber]: There was an issue changing the number associated with this event {e}")
+
+
 #* Function is working as intended
 def checkWeekendCondition(datetimeObject): 
     try:
@@ -682,6 +708,8 @@ def populateEventsForDay(datetimeObject):
 def getEventObjectById(eventObjectId):
     """
     Returns an eventObject when you provide the eventId
+    This is the eventObject from GOOGLE CALENDAR 
+    it contains more metadata than the simplified one used in development
     """
     try: 
         calendarService = initializeCalendarService() 

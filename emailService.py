@@ -55,7 +55,7 @@ def createConfirmationMessageExample():
     print("[createMessageHeader]: Message object created successfully.")
 
 # return message
-def createConfirmationMessage(eventId, customerName, customerEmail, vehicleInfo, address, cleanType, startTime, duration): 
+def createConfirmationMessage(eventId, customerName, customerEmail, number, vehicleInfo, address, cleanType, startTime, duration): 
     #* setup MIME 
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
@@ -74,6 +74,7 @@ Your confirmation code is <b>{eventId}</b><br>
 Please keep this code safe, as you can use it to modify or cancel your appointment.</p>
 
 <p><b>Details:</b><br>
+Phone Number: <b>{number}<b><br>
 Car: <b>{vehicleInfo}</b><br>
 Location: <b>{address}</b><br>
 Service: <b>{cleanType}</b><br>
@@ -161,7 +162,7 @@ Do not reply back to this message, inbox is unmonitored.
     print(f"This is the message delete confirmation {message}")
     return message 
 
-def createEditConfirmationMessage(recipientEmail): 
+def createEditConfirmationMessage(eventId, customerName, recipientEmail, number, vehicleInfo, address, cleanType, startTime, duration): 
     # setup MIME 
     message = MIMEMultipart()
     # setup message headers 
@@ -170,7 +171,30 @@ def createEditConfirmationMessage(recipientEmail):
     message['Subject'] = 'Appointment Modification'
     
     #* Message content 
-    body = """ 
+    body = f""" 
+<html>
+<body>
+<p>Hello {customerName},</p>
+
+<p>This message is to inform you of the following changes that has been made.<br>
+Your confirmation code is still <b>{eventId}</b><br>
+Please keep this code safe, as you can use it to modify or cancel your appointment.</p>
+
+<p><b>Details:</b><br>
+Phone Number: <b>{number}<b><br>
+Car: <b>{vehicleInfo}</b><br>
+Location: <b>{address}</b><br>
+Service: <b>{cleanType}</b><br>
+Time: <b>{convertDateTime(startTime, duration)}</b></p>
+
+<p>Feel free to add this event to your Google Calendar automatically by clicking the .ics file.</p>
+
+<p>Best regards,<br>
+Ten (Just an AutoBot)</p>
+
+<p><i>Do not reply back to this message, the inbox is unmonitored.</i></p>
+</body>
+</html>
     Hello insert_customer_name_here, 
 
     This message is to inform you of your appointment change. 

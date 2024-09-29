@@ -3,8 +3,8 @@
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
-from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editNumber, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
@@ -358,6 +358,7 @@ def proto1():
                     uniqueEventId, 
                     eventObject['name'], 
                     eventObject['email'], 
+                    eventObject['number'],
                     eventObject['carModel'], 
                     eventObject['location'], 
                     eventObject['description'], 
@@ -547,7 +548,21 @@ def proto3():
                             while not phoneNumberChecker(newInput):
                                 print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
                                 newInput = input("[You]: ").strip()
-                            eventObject[field] = newInput
+                            
+                            print(f"[MAIN_THREAD]: This is the eventObject {eventObject}")
+                            print("[Teni]: Changing the phone number now...")
+                            editNumber(confirmationCode, newInput)
+                            createEditConfirmationMessage(
+                                confirmationCode, 
+                                eventObject['summary'],
+                                eventObject['description'].split('\n')[3],
+                                eventObject['description'].split('\n')[2],
+                                eventObject['description'].split('\n')[1],
+                                eventObject['location'],
+                                eventObject['description'].split('\n')[0],
+                                datetime.fromisoformat(eventObject['start']['dateTime']),
+                                serviceToHours(1 if eventObject['description'][0] != 'Exterior & Interior' else 2)
+                            )
                         
                         elif field == 'email':
                             while not emailChecker(newInput):
