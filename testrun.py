@@ -3,7 +3,7 @@
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editVehicle, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours
 from dateutil import parser
@@ -591,8 +591,22 @@ def proto3():
                             while not carDescriptionchecker(newInput):
                                 print("[Teni]: Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic).")
                                 newInput = input("[You]: ").strip()
-                            eventObject[field] = newInput
-                        
+                            
+                            print("[Teni]: Changing your vehicle now...")
+                            editVehicle(confirmationCode, newInput)
+                            editMsgObject = createEditConfirmationMessage(
+                                confirmationCode, 
+                                eventObject['summary'],
+                                eventObject['description'].split('\n')[3],
+                                eventObject['description'].split('\n')[2],
+                                eventObject['description'].split('\n')[1],
+                                eventObject['location'],
+                                eventObject['description'].split('\n')[0],
+                                datetime.fromisoformat(eventObject['start']['dateTime']),
+                                serviceToHours(1 if eventObject['description'][0] != 'Exterior & Interior' else 2)
+                            )
+                            sendEmail(editMsgObject, eventObject['description'].split('\n')[3])
+
                         elif field == 'description': 
                             # if we change the service type, we need to change the offset hours 
                             prevOffsetTime = serviceOffsetTime              # save a copy of the old duration 

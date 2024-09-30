@@ -636,7 +636,28 @@ def editEmail(eventId, emailAddress):
         print(f"Successfully updated event: {updatedEventObject.get('htmlLink')}")
 
     except Exception as e:
-        print(f"[editEmail]: There was an issue changing the email address associated with this appointment")
+        print(f"[editEmail]: There was an issue changing the email address associated with this appointment {e}")
+
+def editVehicle(eventId, vehicleInfo): 
+    try: 
+        calendarService = initializeCalendarService()
+
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
+
+        splitList = event['description'].split('\n')
+
+        splitList[1] = vehicleInfo
+
+        finalDescription = '\n'.join(splitList)
+
+        event['description'] = finalDescription 
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute() 
+
+        print(f"Successfully updated event: {updatedEventObject.get('htmlLink')}")
+
+    except Exception as e: 
+        print(f"[editVehicle]: There was an issue changing the vehicle information associated with this appointment {e}")
 
 #* Function is working as intended
 def checkWeekendCondition(datetimeObject): 
