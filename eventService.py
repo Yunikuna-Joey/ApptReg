@@ -591,12 +591,11 @@ def editNumber(eventId, number):
         calendarService = initializeCalendarService()
 
         # get the current event details 
-        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
-
-        print(f"[editNumber]: This is eventObject {event}")
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
 
         # the description key has 4 points of information [serviceType, carModel, number, email]
         splitList = event['description'].split('\n')
+
         # it will always follow the same pattern so we can go straight to the index 
         splitList[2] = number
 

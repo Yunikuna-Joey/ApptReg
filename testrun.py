@@ -549,10 +549,11 @@ def proto3():
                                 print("[Teni]: Invalid phone number. Please enter a valid phone number (e.g., 999-123-4567).")
                                 newInput = input("[You]: ").strip()
                             
-                            print(f"[MAIN_THREAD]: This is the eventObject {eventObject}")
+                            # print(f"[MAIN_THREAD]: This is the eventObject {eventObject}")
+
                             print("[Teni]: Changing the phone number now...")
                             editNumber(confirmationCode, newInput)
-                            createEditConfirmationMessage(
+                            editMsgObject = createEditConfirmationMessage(
                                 confirmationCode, 
                                 eventObject['summary'],
                                 eventObject['description'].split('\n')[3],
@@ -563,6 +564,7 @@ def proto3():
                                 datetime.fromisoformat(eventObject['start']['dateTime']),
                                 serviceToHours(1 if eventObject['description'][0] != 'Exterior & Interior' else 2)
                             )
+                            sendEmail(editMsgObject, eventObject['description'].split('\n')[3])
                         
                         elif field == 'email':
                             while not emailChecker(newInput):

@@ -195,26 +195,9 @@ Ten (Just an AutoBot)</p>
 <p><i>Do not reply back to this message, the inbox is unmonitored.</i></p>
 </body>
 </html>
-    Hello insert_customer_name_here, 
-
-    This message is to inform you of your appointment change. 
-
-    New appointment details: 
-    **Car**: Year, Make, Model 
-    **Location**: Address 
-    **Type of Cleaning**: Interior, exterior, both
-    **Start Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
-    **End Time**: Format the time as Month Name, Day, Year @ 12 hour format time 
-
-    Thank you for booking with us and we hope to see you soon! 
-
-    Have a great day, 
-    Ten (Just an AutoBot)
-
-    Do not reply back to this message, inbox is unmonitored.
     """
 
-    message.attach(MIMEText(body, 'plain'))
+    message.attach(MIMEText(body, 'html'))
 
     print("[createEditConfirmationMessage]: Message object created successfully.")
     print(f"This is the message edit confirmation {message}")
