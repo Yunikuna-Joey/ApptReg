@@ -586,7 +586,12 @@ def editEvent(eventId, newStartTime, newEndTime):
     except Exception as e: 
         print(f"[editEvent]: An error occurred-- {e}")
 
+# Allows for the user to change their phone number on record
 def editNumber(eventId, number): 
+    """
+    Takes in the eventId [confirmation code] & the NEW phone number
+    """
+
     try: 
         calendarService = initializeCalendarService()
 
@@ -608,8 +613,30 @@ def editNumber(eventId, number):
         print(f"Successfully updated event: {updatedEventObject.get('htmlLink')}")
 
     except Exception as e: 
-        print(f"[editNumber]: There was an issue changing the number associated with this event {e}")
+        print(f"[editNumber]: There was an issue changing the number associated with this appointment {e}")
 
+# allows for the user to change their email address on record
+def editEmail(eventId, emailAddress): 
+    try: 
+        calendarService = initializeCalendarService()
+
+        # grabs the event object from Google Calendar
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
+
+        splitList = event['description'].split('\n')
+
+        splitList[3] = emailAddress
+
+        finalDescription = '\n'.join(splitList)
+
+        event['description'] = finalDescription
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+
+        print(f"Successfully updated event: {updatedEventObject.get('htmlLink')}")
+
+    except Exception as e:
+        print(f"[editEmail]: There was an issue changing the email address associated with this appointment")
 
 #* Function is working as intended
 def checkWeekendCondition(datetimeObject): 

@@ -3,7 +3,7 @@
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editNumber, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours
 from dateutil import parser
@@ -570,7 +570,22 @@ def proto3():
                             while not emailChecker(newInput):
                                 print("[Teni]: Invalid email format. Please enter a valid email address.")
                                 newInput = input("[You]: ").strip()
-                            eventObject[field] = newInput
+                            
+                            print("[Teni]: Changing the email address now...")
+                            editEmail(confirmationCode, newInput)
+                            editMsgObject = createEditConfirmationMessage(
+                                confirmationCode, 
+                                eventObject['summary'],
+                                eventObject['description'].split('\n')[3],
+                                eventObject['description'].split('\n')[2],
+                                eventObject['description'].split('\n')[1],
+                                eventObject['location'],
+                                eventObject['description'].split('\n')[0],
+                                datetime.fromisoformat(eventObject['start']['dateTime']),
+                                serviceToHours(1 if eventObject['description'][0] != 'Exterior & Interior' else 2)
+                            )
+                            sendEmail(editMsgObject, eventObject['description'].split('\n')[3])
+
 
                         elif field == 'carModel':
                             while not carDescriptionchecker(newInput):
