@@ -88,6 +88,17 @@ def carDescriptionchecker(carDescription):
 
     return True if 1980 <= year <= currYear else False 
 
+def serviceTypeChecker(serviceType): 
+    """
+    Checks if the user input is a valid service type 
+    """
+    validInput = ['interior', 'exterior', 'both']
+
+    if serviceType not in validInput: 
+        return False 
+    
+    return True 
+
 def displayConfirmationMessage(eventObject, duration): 
     confirmationMsg = f"""
 Please confirm your details - 
@@ -119,4 +130,4 @@ def serviceToHours(serviceType):
         return serviceMap.get(serviceType, 0) 
 
     else: 
-        return serviceMap.get(serviceType, 0) + serviceMap.get(serviceType, 0)
+        return 2

@@ -5,7 +5,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editVehicle, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
-from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours
+from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours, serviceTypeChecker
 from dateutil import parser
 from app import initializeChatModel, initializeClassificationModel
 
@@ -608,30 +608,34 @@ def proto3():
                             sendEmail(editMsgObject, eventObject['description'].split('\n')[3])
 
                         elif field == 'description': 
+                            while not serviceTypeChecker(newInput): 
+                                print("[Teni]: That is not a service we offer. Please choose a service we offer: interior, exterior, or both.")
+                                newInput = input("[You]: ").strip().lower()
+                                
                             # if we change the service type, we need to change the offset hours 
-                            prevOffsetTime = serviceOffsetTime              # save a copy of the old duration 
+                            splitList = eventObject['description'].split('\n')              # [attr1, attr2, attr3, attr4]
+                            print(f"This is splitList at the 0index {splitList[0]}")
+                            prevOffsetTime = serviceToHours(splitList[0])              # save a copy of the old duration 
 
                             # process differently if we switched to both
-                            if 'both' in newInput or 'Both' in newInput: 
+                            if 'both' in newInput: 
                                 newInput = "Exterior & Interior" 
                                 serviceList = newInput.split('&')
                                 calculation = [serviceToHours(element.strip().lower()) for element in serviceList] 
                                 serviceOffsetTime = sum(calculation)
-                                eventObject[field] = userInput
+                                # eventObject[field] = userInput
 
                             else: 
                                 serviceOffsetTime = serviceToHours(newInput)    
                             
-                            print(f"prev: {prevOffsetTime}, new: {serviceOffsetTime}")
-                            print(f"This is eventObject startTime during confirmation re-check {eventObject['start']}")
-
+                            print(f"This is the value of serviceOffsetTime {serviceOffsetTime} and prevOffsetTime{prevOffsetTime}")
                             # if the new duration is greater than the previous 
                             if serviceOffsetTime > prevOffsetTime: 
                                 # we need to check if the current startTime allows for the new duration without conflicts
                                     # if the current startTime does not allow for the new duration, then we prompt the user to also pick a new time 
                                     # otherwise, continue with just changing the service type from one to another 
-                                if isTimeAvailable(eventObject['start'], serviceOffsetTime) == False: 
-                                    print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(eventObject['start'], serviceOffsetTime)}")
+                                if isTimeAvailable(datetime.fromisoformat(eventObject['start']['dateTime']), serviceOffsetTime) == False: 
+                                    print(f"[Teni]: Your new cleaning service could not be performed at your initial appointment time {convertDateTime(datetime.fromisoformat(eventObject['start']['dateTime']), serviceOffsetTime)}")
                                     print(f"[Teni]: Please choose another time that works best for you as well as make sure there is enough time available to finish ({serviceOffsetTime} hours.)")
                                     
                                     # list the available times for this month from the concurrent day  
@@ -652,12 +656,15 @@ def proto3():
 
                                         newInput = input("[You]: ").strip()
                                         newTime = parser.parse(newInput)
-                                
-                                    eventObject['start'] = newTime
+
+                                    # to be added into the editServiceType function 
+                                    parameterStartTime = newTime.astimezone(ZoneInfo('America/Los_Angeles')).isoformat()
                             
                             # After we check and finish finding a valid time 
-                            # update the service 
-                            eventObject['description'] = newInput
+                            #* official publish to the back end calendar
+                            splitList[0] = newInput
+                            # to be added into the editServiceType function
+                            parameterDescription = '\n'.join(splitList)
 
 
                         elif field == 'start': 

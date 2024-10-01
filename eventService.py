@@ -659,6 +659,13 @@ def editVehicle(eventId, vehicleInfo):
     except Exception as e: 
         print(f"[editVehicle]: There was an issue changing the vehicle information associated with this appointment {e}")
 
+def editServiceType(eventId, description, startTime): 
+    try: 
+        calendarService = initializeCalendarService() 
+
+    except Exception as e: 
+        print(f"[editDescription]: There was an issue changing the service type and time {e}")
+
 #* Function is working as intended
 def checkWeekendCondition(datetimeObject): 
     try:
