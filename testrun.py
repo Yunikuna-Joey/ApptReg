@@ -3,7 +3,7 @@
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editVehicle, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editServiceType, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours, serviceTypeChecker
 from dateutil import parser
@@ -659,13 +659,14 @@ def proto3():
 
                                     # to be added into the editServiceType function 
                                     parameterStartTime = newTime.astimezone(ZoneInfo('America/Los_Angeles')).isoformat()
-                            
+                                    editTimeSlot(confirmationCode, parameterStartTime)
+
                             # After we check and finish finding a valid time 
                             #* official publish to the back end calendar
-                            splitList[0] = newInput
-                            # to be added into the editServiceType function
-                            parameterDescription = '\n'.join(splitList)
-
+                            # splitList[0] = newInput
+                            # # to be added into the editServiceType function
+                            # parameterDescription = '\n'.join(splitList)
+                            editServiceType(confirmationCode, newInput)
 
                         elif field == 'start': 
                             try: 
@@ -698,7 +699,7 @@ def proto3():
                                     startTime = parser.parse(newInput)
                                     newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
                                 
-                                eventObject['start'] = startTime
+                                editTimeSlot(confirmationCode, newStartTime.isoformat())
 
                             except (ValueError, TypeError):
                                 print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")

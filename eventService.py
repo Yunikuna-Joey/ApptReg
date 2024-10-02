@@ -659,12 +659,37 @@ def editVehicle(eventId, vehicleInfo):
     except Exception as e: 
         print(f"[editVehicle]: There was an issue changing the vehicle information associated with this appointment {e}")
 
-def editServiceType(eventId, description, startTime): 
+def editServiceType(eventId, description): 
     try: 
         calendarService = initializeCalendarService() 
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
 
+        splitList = event['description'].split('\n')
+
+        splitList[0] = description
+
+        finalDescription = '\n'.join(splitList)
+
+        event['description'] = finalDescription
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+        
+        print(f"Successfully updated service type {updatedEventObject.get('htmlLink')}")
     except Exception as e: 
         print(f"[editDescription]: There was an issue changing the service type and time {e}")
+
+def editTimeSlot(eventId, startTime): 
+    try: 
+        calendarService = initializeCalendarService()
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
+
+        event['start'] = startTime
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+        print(f"[editTimeslot]: Successfully changed the appointment time {updatedEventObject['htmlLink']}")
+
+    except Exception as e: 
+        print(f"[editTimeslot]: There as an issue changing the time for this appointment {e}")
 
 #* Function is working as intended
 def checkWeekendCondition(datetimeObject): 
