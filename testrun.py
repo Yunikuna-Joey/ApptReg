@@ -629,7 +629,7 @@ def proto3():
                                 serviceOffsetTime = serviceToHours(newInput)    
                             
                             print(f"This is the value of serviceOffsetTime {serviceOffsetTime} and prevOffsetTime{prevOffsetTime}")
-                            # if the new duration is greater than the previous 
+                            # if the new duration is greater than the previous [changing from interior ==> both]
                             if serviceOffsetTime > prevOffsetTime: 
                                 # we need to check if the current startTime allows for the new duration without conflicts
                                     # if the current startTime does not allow for the new duration, then we prompt the user to also pick a new time 
@@ -658,8 +658,15 @@ def proto3():
                                         newTime = parser.parse(newInput)
 
                                     # to be added into the editServiceType function 
-                                    parameterStartTime = newTime.astimezone(ZoneInfo('America/Los_Angeles')).isoformat()
-                                    editTimeSlot(confirmationCode, parameterStartTime)
+                                    # parameterStartTime = newTime.astimezone(ZoneInfo('America/Los_Angeles')).isoformat()
+                                    editTimeSlot(confirmationCode, newTime, serviceOffsetTime)
+
+                            # [changing from both ==> interior]
+                            # if the time was valid for both, it is automatically valid for every service 
+                            # so we just need to change the end time of the appointment in the back-end 
+                            elif serviceOffsetTime < prevOffsetTime:
+                                editTimeSlot(confirmationCode, datetime.fromisoformat(eventObject['start']['dateTime']), serviceOffsetTime)
+
 
                             # After we check and finish finding a valid time 
                             #* official publish to the back end calendar

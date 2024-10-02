@@ -678,12 +678,20 @@ def editServiceType(eventId, description):
     except Exception as e: 
         print(f"[editDescription]: There was an issue changing the service type and time {e}")
 
-def editTimeSlot(eventId, startTime): 
+def editTimeSlot(eventId, startTime, duration): 
     try: 
         calendarService = initializeCalendarService()
         event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
 
-        event['start'] = startTime
+        # starttime should be taking in a datetime object 
+        # must give it timezone and iso format before processing the value 
+
+        eventStart = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
+        eventEnd = (eventStart + timedelta(hours=duration)).astimezone(ZoneInfo('America/Los_Angeles'))
+
+        event['start']['dateTime'] = eventStart.isoformat()
+        event['end']['dateTime'] = eventEnd.isoformat()
+
 
         updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
         print(f"[editTimeslot]: Successfully changed the appointment time {updatedEventObject['htmlLink']}")
