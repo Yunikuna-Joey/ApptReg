@@ -679,8 +679,12 @@ def proto3():
                             try: 
                                 startTime = parser.parse(newInput) 
 
+                                # extract the duration from the eventObject
+                                splitList = eventObject['description'].split('\n')
+                                duration = splitList[0]
+
                                 # check if the requested day is a weekend 
-                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime, serviceOffsetTime) == False: 
+                                while checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False or isTimeAvailable(startTime, serviceToHours(duration)) == False: 
                                     if checkWeekendCondition(startTime) == False:
                                         print("[Teni]: Please choose a weekend as we are not taking appointments on weekdays.")
                                     elif checkDayState(startTime) == False:
@@ -688,7 +692,7 @@ def proto3():
                                     elif checkWorkHour(startTime) == False:
                                         print("[Teni]: Please choose a time within our working hours (8 AM - 8 PM).")
                                     elif isTimeAvailable(startTime, serviceOffsetTime) == False: 
-                                        print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceOffsetTime} hours)")
+                                        print(f"[Teni]: That timeslot is not available for your service, please choose another time and/or day to fit your service duration ({serviceToHours(duration)} hours)")
 
                                     newInput = input("[You]: ").strip()
                                     startTime = parser.parse(newInput)
@@ -706,7 +710,7 @@ def proto3():
                                     startTime = parser.parse(newInput)
                                     newStartTime = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
                                 
-                                editTimeSlot(confirmationCode, newStartTime.isoformat())
+                                editTimeSlot(confirmationCode, newStartTime, serviceToHours(duration))
 
                             except (ValueError, TypeError):
                                 print("[Teni]: I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)")
