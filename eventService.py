@@ -261,8 +261,8 @@ def listAvailableTimeValidMonth():
         
         # # Print the dateTimeObject with the assigned timezone for debugging
         # print(f"[listAvailableTime]: {currentDayObject}")
-
         startThreshhold = currentDayObject
+
 
         if startThreshhold.month == 12: 
             endOfMonth = startThreshhold.replace(year=startThreshhold.year + 1, month=1, day=1) - timedelta(seconds=1)
@@ -298,10 +298,14 @@ def listAvailableTimeValidMonth():
         # Iterating through every day of the current month 
         # starting from the first day of the current month
         currDay = startThreshhold
+        weekendsFound = False 
+
         while currDay <= endOfMonth: 
             # if the current day is a weekend [5, 6] representing 
             # Saturday and Sunday respectively 
             if currDay.weekday() in [5, 6]: 
+                weekendsFound = True 
+
                 #*** we are currently iterating through the eventList of event objects each time, but
                 #*** we can make it less taxing by removing the already processed days/event objects
                 #*** to improve performance slightly
@@ -358,6 +362,63 @@ def listAvailableTimeValidMonth():
             # move to the next day
             currDay += timedelta(days=1)
 
+        if not weekendsFound: 
+            print("[Teni]: No weekends were found this month, checking the next month...")
+            nextMonth = startThreshhold.replace(day=1)
+            if nextMonth.month == 12:
+                nextMonth = nextMonth.replace(year=nextMonth.year + 1, month=1)
+            else:
+                nextMonth = nextMonth.replace(month=nextMonth.month + 1)
+
+            nextMonthEnd = nextMonth.replace(day=1).replace(month=nextMonth.month + 1) - timedelta(seconds=1)
+
+            timeMinNextMonth = nextMonth.isoformat()
+            timeMaxNextMonth = nextMonthEnd.isoformat()
+
+            # Query events for the next month
+            resultListNextMonth = calendarService.events().list(
+                calendarId=TARGET_CALENDAR_ID,
+                timeMin=timeMinNextMonth,
+                timeMax=timeMaxNextMonth,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+
+            eventListNextMonth = resultListNextMonth.get('items', [])
+
+            # Process weekends in the next month (similar logic to current month)
+            currDay = nextMonth
+            while currDay <= nextMonthEnd:
+                if currDay.weekday() in [5, 6]:
+                    weekendObjectList = [
+                        event for event in eventListNextMonth
+                        if event['start'].get('dateTime', event['start'].get('date')).startswith(currDay.strftime('%Y-%m-%d'))
+                    ]
+
+                    timeStart = currDay.replace(hour=8, minute=0, second=0, microsecond=0)
+                    timeEnd = currDay.replace(hour=20, minute=0, second=0, microsecond=0)
+                    timeAvailable = [(timeStart, timeEnd)]
+
+                    for event in weekendObjectList: 
+                        eventStart = datetime.fromisoformat(event['start'].get('dateTime'))
+                        eventEnd = datetime.fromisoformat(event['end'].get('dateTime'))
+
+                        newAvailableTimes = []
+                        for workStart, workEnd in timeAvailable: 
+                            if eventStart <= workEnd and eventEnd >= workStart: 
+                                if workStart < eventStart: 
+                                    newAvailableTimes.append((workStart, eventStart))
+                                if eventEnd < workEnd: 
+                                    newAvailableTimes.append((eventEnd, workEnd))
+                            else: 
+                                newAvailableTimes.append((workStart, workEnd))
+
+                        timeAvailable = newAvailableTimes
+
+                    availableSlots[currDay.strftime('%Y-%m-%d')] = timeAvailable
+                
+                currDay += timedelta(days=1)
+    
         for date, times in availableSlots.items(): 
             if times: 
                 print(f"Available times on {date}:")
