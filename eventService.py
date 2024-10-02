@@ -944,6 +944,8 @@ def isTimeAvailable(startTimeObject, duration):
 
     availableSlots = populateAvailableSlots()
 
+    print(f"This is available slots {availableSlots}")
+
     # check if the date has available slots 
     if eventDate not in availableSlots: 
         print(f"No availability on {eventDate}")
