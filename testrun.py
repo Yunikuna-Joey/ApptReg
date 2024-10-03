@@ -365,7 +365,7 @@ def proto1():
                 #     eventObject['start'], 
                 #     serviceOffsetTime
                 # )
-                confirmationMsg = createConfirmationMessageNew(
+                confirmationMsg = createConfirmationMessage(
                     uniqueEventId, 
                     eventObject['name'], 
                     eventObject['email'], 
@@ -772,7 +772,7 @@ def testWhileLoop():
         for event in eventList: 
             if newStartTime.isoformat() == event['start']['dateTime']: 
                 print(f"[Teni]: Your requested time is not available. Please choose another time")
-                listAvailableTimeMonth(cleanStartTime)
+                # listAvailableTimeMonth(cleanStartTime)
                 break
             else: 
                 print("We hit the else statement where nothing should happen besides the message")
