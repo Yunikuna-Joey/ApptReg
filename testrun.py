@@ -353,18 +353,6 @@ def proto1():
                 uniqueEventId = confirmationEvent.get('id')
 
                 #**************************************** Uncomment the send email function in production ***********************************************************
-                # we will need to send a confirmation email to the customer after adding the event into google calendar
-                # confirmationMsg = createConfirmationMessage(
-                #     uniqueEventId, 
-                #     eventObject['name'], 
-                #     eventObject['email'], 
-                #     eventObject['number'],
-                #     eventObject['carModel'], 
-                #     eventObject['location'], 
-                #     eventObject['description'], 
-                #     eventObject['start'], 
-                #     serviceOffsetTime
-                # )
                 confirmationMsg = createConfirmationMessage(
                     uniqueEventId, 
                     eventObject['name'], 
