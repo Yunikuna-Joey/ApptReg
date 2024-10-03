@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os 
 load_dotenv()
 
+import requests
 import google.generativeai as genai
 
 #* Instructions to connect the chat model with its instructions
@@ -85,69 +86,43 @@ def generatePrompt(field):
 
     return prompts.get(field, "Could you provide more information?")
 
-def main(): 
-    print("Initializing the chat")
+# Instagram API URL to send messages
+INSTAGRAM_API_URL = "https://graph.facebook.com/v21.0/me/messages"
 
-    model = initializeChatModel()
-    intentModel = initializeClassificationModel()
-    intentObject = ""
-    eventObject = { 
-        'summary': None, 
-        'location': None, 
-        'description': None, 
-        'start': None, 
-        'end': None
+def instagramReply(recipientId, messageContent): 
+    url = f"{INSTAGRAM_API_URL}?access_token={os.getenv('INSTAGRAM_TOKEN')}"
+
+    # payload for sending a message
+    payload = { 
+        'recipient': {'id': recipientId},
+        'message': {'message': messageContent}
     }
+    
+    # pack reponse payload
+    response = requests.post(url, json=payload)
 
-    while True: 
-        # Let user type in their responses
-        userInput = input("[You]: ")
+    # success Code
+    if response.status_code == 200: 
+        print(f"Message sent to user {recipientId}: {messageContent}")
+    
+    else: 
+        print(f"Failed to send message: {response.status_code}, {response.text}")
 
-        # Bot will generate a response to the userInput
-        response = model.generate_content(userInput)
+# This is the start of integrating the instagram account into the bot responses
+def main(): 
+    """" 
+    ** background tasks before starting #1 
+        we need to set-up Flask or node.js server so that our web hooks can live detect incoming end-user message requests to reply back to. 
+        need to check-in with developer portal with IG api and continue 
+
+    1. Try and send out a hard-coded response to an user input
+        (need to look into webhooks for live account testing)
+        --> Me (end-user) will send a greeting message to the account
+        --> Bot will send a message 
+    """ 
+    print('hello world :(')
+
         
-        # Determine the intent behind the user input
-        intentObject = intentModel.generate_content(userInput) 
-        # print(f"[intentObject]: This is the intentObject {intentObject}")
-        print(f"This is the intent Object {intentObject.text} and this is the lower {intentObject.text.lower()}")
-
-        # if intentObject.text.lower().strip() == "appointment scheduling" or intentObject.text.lower().strip() == "create": 
-        #     print("Hello world")
-
-        # Reset the intent object if the intentObject is not one of the following options
-        # if intentObject not in ['create', 'modify', 'delete']: 
-        #     intentObject = "" 
-
-        if intentObject.text.lower().strip() == "appointment scheduling" or intentObject.text.lower().strip() == "create": 
-            print("I have triggered the create conditional")
-            # Extract or prompt for missing information
-            for field in eventObject:
-                if not eventObject[field]:
-                    # Generate a prompt to ask for missing information
-                    prompt = generatePrompt(field)
-                    print(f"[Teni]: {prompt}")
-                    userInput = input("[You]: ")
-                    eventObject[field] = model.generate_content(userInput).text.strip()
-
-            # Call the function to create the event object
-            object = createEventObject(
-                eventObject['summary'],
-                eventObject['location'],
-                eventObject['description'],
-                eventObject['start'], 
-                eventObject['end']
-            )
-
-            addEvent(object)
-            print("[Teni]: Your event has been created successfully!")
-
-            # Reset the intent and event object after creating the event
-            intentObject = ""
-            # eventObject = {value: None for value in eventObject}
-
-
-        # Display the generated response
-        # print(f'[Teni]: {response.text}')
 
         
     
@@ -162,18 +137,10 @@ if __name__ == "__main__":
                             Phone Number 
                             Email address 
     """
-    # main()
-    # testRun()
-
-    # displayAllEvents()
-    # displayCurrWeekEvents()
-    # displayWeekendEvents()
-    # listAvailableTime()
-    # testTime()
-
-    proto1() # add event scenario
+    #* our scenarios 
+    # proto1() # add event scenario
     # proto2() # delete event scenario
-    # proto3()
+    # proto3() # update event scenarios
 
     #** keep this as a basis for eventObject declaration
     eventObject = {
@@ -186,43 +153,5 @@ if __name__ == "__main__":
         'start': datetime(2024, 9, 21, 10, 15, 0)
     }
     
-    # eventObject['start'] = parser.parse(input('[You]: '))
-    # msg = createBoldMsg('eventCodething', 'name', 'emailaddress', 'yup', '23812', 'both', eventObject['start'])
-    # sendEmail(msg, 'lujoey68@gmail.com')
-    # displayConfirmationMessage(eventObject)
     
-    # userInput = ''
-    # intentModel = initializeClassificationModel()
-
-    # while userInput not in ['quit', 'stop']: 
-    #     userInput = input('[You]: ')
-
-    #     if userInput.strip().lower() in ['quit', 'stop']: 
-    #         print('Ending the conversation')
-    #         break 
-
-    #     intentObject = intentModel.generate_content(userInput) # [delete, ]
-    #     print(f"This is the intentObject {intentObject.text}")
-
-    # userInput = ''
-    # intentModel = initializeClassificationModel()
-
-    # while userInput not in ['quit', 'stop']: 
-    #     userInput = input('[You]: ')
-
-    #     if userInput.strip().lower() in ['quit', 'stop']: 
-    #         print('Ending the conversation')
-    #         break 
-
-    #     intentObject = intentModel.generate_content(userInput) # [modify, ]
-    #     print(f"This is the intentObject {intentObject.text}")
-
-    # September 29 @2PM 
-    # requestStart = datetime(2024, 9, 29, 9, 0, tzinfo=ZoneInfo("America/Los_Angeles"))
-    # duration = 2 
-
-    # print(isTimeAvailable(requestStart, duration)) 
-
-    # listAvailableTimeValidMonth()
-    # print(getEventObjectById('fc1p5k0ktrfolabs4pk8hsplns'))
 
