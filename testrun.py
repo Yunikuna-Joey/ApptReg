@@ -3,7 +3,7 @@
 """
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editServiceType, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, listAvailableTimeMonth, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
+from eventService import checkDayState, createEventObject, addEvent, checkWeekendCondition, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editServiceType, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, listAvailableTimeValidMonth, populateEventsForDay, checkWorkHour
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from helper import convertDateTime, displayConfirmationMessage, resetObjectValues, carDescriptionchecker, phoneNumberChecker, emailChecker, serviceToHours, serviceTypeChecker
 from dateutil import parser
@@ -354,7 +354,18 @@ def proto1():
 
                 #**************************************** Uncomment the send email function in production ***********************************************************
                 # we will need to send a confirmation email to the customer after adding the event into google calendar
-                confirmationMsg = createConfirmationMessage(
+                # confirmationMsg = createConfirmationMessage(
+                #     uniqueEventId, 
+                #     eventObject['name'], 
+                #     eventObject['email'], 
+                #     eventObject['number'],
+                #     eventObject['carModel'], 
+                #     eventObject['location'], 
+                #     eventObject['description'], 
+                #     eventObject['start'], 
+                #     serviceOffsetTime
+                # )
+                confirmationMsg = createConfirmationMessageNew(
                     uniqueEventId, 
                     eventObject['name'], 
                     eventObject['email'], 

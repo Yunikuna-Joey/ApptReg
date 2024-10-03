@@ -171,7 +171,7 @@ if __name__ == "__main__":
     # listAvailableTime()
     # testTime()
 
-    # proto1() # add event scenario
+    proto1() # add event scenario
     # proto2() # delete event scenario
     # proto3()
 
@@ -223,6 +223,6 @@ if __name__ == "__main__":
 
     # print(isTimeAvailable(requestStart, duration)) 
 
-    listAvailableTimeValidMonth()
+    # listAvailableTimeValidMonth()
     # print(getEventObjectById('fc1p5k0ktrfolabs4pk8hsplns'))
 

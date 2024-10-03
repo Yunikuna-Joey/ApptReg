@@ -60,7 +60,7 @@ def createConfirmationMessage(eventId, customerName, customerEmail, number, vehi
     message = MIMEMultipart()
     # setup to, from, and subject line portion of the email
     message['From'] = smtp_username
-    message['To'] = customerEmail # swap this to recipient user email
+    message['To'] = customerEmail 
     message['Subject'] = "Appointment Confirmation"
 
     #* Message content
@@ -74,13 +74,13 @@ Your confirmation code is <b>{eventId}</b><br>
 Please keep this code safe, as you can use it to modify or cancel your appointment.</p>
 
 <p><b>Details:</b><br>
-Phone Number: <b>{number}<b><br>
+Phone Number: <b>{number}</b><br>
 Car: <b>{vehicleInfo}</b><br>
 Location: <b>{address}</b><br>
 Service: <b>{cleanType}</b><br>
 Time: <b>{convertDateTime(startTime, duration)}</b></p>
 
-<p>Feel free to add this event to your Google Calendar automatically by clicking the .ics file.</p>
+<p>Feel free to add this event to your Google Calendar automatically by clicking the attached .ics file.</p>
 
 <p>Best regards,<br>
 Ten (Just an AutoBot)</p>
@@ -90,40 +90,44 @@ Ten (Just an AutoBot)</p>
 </html>
     """
 
-    # convert message to plain text
+    # Attach the body as HTML content
     message.attach(MIMEText(body, 'html'))
 
-    tzInfo = ZoneInfo('America/Los_Angeles')
-    eventStart = startTime.astimezone(tzInfo)
-    eventEnd = (startTime + timedelta(hours=duration)) 
+    # Timezone information
+    eventStart = startTime.astimezone(ZoneInfo('America/Los_Angeles'))
+    eventEnd = (startTime + timedelta(hours=duration)).astimezone(ZoneInfo('America/Los_Angeles'))
 
     formatStart = eventStart.strftime('%Y%m%dT%H%M%S')
     formatEnd = eventEnd.strftime('%Y%m%dT%H%M%S')
-    
-    icsContent = f"""BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//YourCompany//NONSGML v1.0//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-BEGIN:VEVENT
-UID:{eventId}
-DTSTAMP:{datetime.now(tzInfo).strftime('%Y%m%dT%H%M%S')}
-DTSTART;TZID=America/Los_Angeles:{formatStart}
-DTEND;TZID=America/Los_Angeles:{formatEnd}
-SUMMARY:Car Detailing Appointment
-DESCRIPTION:{cleanType} - {vehicleInfo}
-LOCATION:{address}
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-END:VCALENDAR
-    """
 
-    # convert the icsContent to a MIMEBASE object and attach into the email 
+    # ICS content with proper formatting
+    icsContent = (
+        f"BEGIN:VCALENDAR\r\n"
+        f"VERSION:2.0\r\n"
+        f"PRODID:-//YourCompany//NONSGML v1.0//EN\r\n"
+        f"CALSCALE:GREGORIAN\r\n"
+        f"METHOD:REQUEST\r\n"
+        f"BEGIN:VEVENT\r\n"
+        f"UID:{eventId}\r\n"
+        f"DTSTAMP:{datetime.now(ZoneInfo('America/Los_Angeles')).strftime('%Y%m%dT%H%M%S')}\r\n"
+        f"DTSTART;TZID=America/Los_Angeles:{formatStart}\r\n"
+        f"DTEND;TZID=America/Los_Angeles:{formatEnd}\r\n"
+        f"SUMMARY:Car Detailing Appointment\r\n"
+        f"DESCRIPTION:{cleanType} - {vehicleInfo}\r\n"
+        f"LOCATION:{address}\r\n"
+        f"STATUS:CONFIRMED\r\n"
+        f"TRANSP:OPAQUE\r\n"
+        f"SEQUENCE:0\r\n"
+        f"END:VEVENT\r\n"
+        f"END:VCALENDAR\r\n"
+    )
+
+    # Attach ICS content as a MIMEBase object
     portion = MIMEBase('text', 'calendar', method='REQUEST', name='appointment.ics')
     portion.set_payload(icsContent)
     encoders.encode_base64(portion)
     portion.add_header('Content-Disposition', 'attachment; filename="appointment.ics"')
+    portion.add_header('Content-Type', 'text/calendar; charset="utf-8"; method=REQUEST')
     message.attach(portion)
 
     print("[createMessageHeader]: Message object created successfully.")
