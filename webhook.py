@@ -9,6 +9,8 @@ app = Flask(__name__)
 
 verifyToken = os.getenv('VERIFY_TOKEN')
 
+# the route is the url 
+# function is nothing special
 @app.route('/')
 def hello():
     return "Hello, World! This is served via Ngrok with basic auth."
