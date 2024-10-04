@@ -13,3 +13,5 @@
     - pip install pytz
     - pip install tzdata [used on Windows OS to utilize ZoneInfo]
     - pip install dnspython [used to determine whether or not an email address can receive emails]
+    - pip install flask
+    - pip install ngrok
