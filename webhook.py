@@ -27,6 +27,11 @@ def verifyWebhook():
     token = request.args.get('hub.verify_token')
     challenge = request.args.get('hub.challenge')
 
+    print(f"This is the mode {mode} \n")
+    print(f"This is the token {token} \n")
+    print(f"This is the challenge {challenge}\n")
+
+
     # determine if the mode is subscribe and if the handshake was correct
     if mode == 'subscribe' and token == verifyToken: 
         # return the handshake back to meta with a success code
@@ -37,16 +42,20 @@ def verifyWebhook():
         return 'Verification failed', 403
     
 if __name__ == '__main__': 
-    # set up ngrok tunnel 
+    # programatically set up the auth token for the user
     ngrok.set_auth_token(os.getenv('NGROK_TOKEN'))
-
+    
+    # set up basic auth with your chosen values 
     username = os.getenv('BAUTH_USER')
     pw = os.getenv('BAUTH_PW')
+    
+    # link the local server from Flask (port #) to the domain, with the basic auth credentials set up
+    publicUrl = ngrok.connect(
+        addr=5000, 
+        domain=f"{os.getenv('NGROK_DOMAIN')}",
+        basic_auth=[f"{username}:{pw}"]
+    )
 
-    listener = ngrok.forward("localhost:5000",
-                            authtoken=os.getenv('NGROK_TOKEN'),
-                            basic_auth=[f"{username}:{pw}"])
-
-    print(f"Ingress established at: {listener.url()}")
+    print(f" * Public URL: {publicUrl}")
 
     app.run(port=5000)
