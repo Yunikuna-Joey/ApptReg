@@ -37,6 +37,9 @@ def initializeNgrokService():
     print(f"ngrok tunnel is running at: {ngrokTunnel.url}")
 
 def getUserAgentHeader(): 
+    """
+    Returns the User-Agent field portion of a request package
+    """
     userAgentField = request.headers.get('User-Agent')
     # print(f"This is the userAgentField {userAgentField}")
     return userAgentField
