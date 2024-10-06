@@ -31,9 +31,7 @@ def initializeNgrokService():
     ngrokTunnel = ngrok.connect(
         proto="http", 
         addr=5000, 
-        domain=f"{os.getenv('NGROK_DOMAIN')}",
-        verify_webhook="FACEBOOK_GRAPH_API", 
-        verify_webhook_secret=os.getenv('APP_SECRET')
+        domain=f"{os.getenv('NGROK_DOMAIN')}"
     )
 
     print(f"ngrok tunnel is running at: {ngrokTunnel.url}")
