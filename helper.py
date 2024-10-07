@@ -131,3 +131,22 @@ def serviceToHours(serviceType):
 
     else: 
         return 2
+    
+def generatePrompt(field): 
+    """ 
+        This will allow for customization of different questions that can be asked 
+        to fill in for the missing (necessary) information to pack the 
+        event object 
+    """
+
+    prompts = {
+        'name': "What is your name?",
+        'number': "What is your phone number?",
+        'email': "What is your email address?",
+        'carModel': "What is the year/make/model of your vehicle?", 
+        'location': "Please provide your address if you would like for us to come to you, otherwise enter 'your facility'. ",
+        'description': "What kind of wash are you looking for? We have interior, exterior, or you can say both",
+        'start': "What day and time are you lookin for? Please specify the date and time in this format 'September 18 at 12PM'",
+    }
+
+    return prompts.get(field, "Could you provide more information?")

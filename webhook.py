@@ -1,6 +1,8 @@
-from flask import Flask, request
-from webhookhelper import initializeNgrokService, getUserAgentHeader, extractMessageContentFromPayload
-import ngrok
+from flask import Flask, request, jsonify
+from webhookhelper import extractSenderIdFromPayload, initializeNgrokService, getUserAgentHeader, extractMessageContentFromPayload
+from scenario import additionScenario
+
+import requests
 
 from dotenv import load_dotenv
 import os 
@@ -67,6 +69,7 @@ def processPostRequest():
             """ 
             The webhook will listen for a Message Event from Meta API 
             We extract the message content from the webhook request 
+            We extract the message sender ID for session management
 
             Pass it into our logic for attempting an appointment
                 => Option1: What if we grab the intent from the first message? 
@@ -80,19 +83,37 @@ def processPostRequest():
             # payload will have the information that we need to extract coming from meta api 
             payload = request.get_json()
 
-            extractMessageContentFromPayload(payload)
+            messageContent = extractMessageContentFromPayload(payload)
+            senderId = extractSenderIdFromPayload(payload)
             
+            response = sendMsg(messageContent, senderId)
 
             
             # print(f"[Second Call]: This is the incoming payload: {payload}")
 
             # After processing the request, we need to return a 200 success code 
             return 'Message received', 200 
+            # return jsonify({"status": "ok"})
 
     except Exception as e:
         return f"There was an error processing the request {e}", 403
 
-    
+def sendMsg(userId, messageContent): 
+    url = f"https://graph.facebook.com/v21.0/{YOUR_IG_PAGE_ID}/messages"
+
+    payload = { 
+        'recipient': {'id': userId}, 
+        'message': {'text': messageContent}, 
+        'messaging_type': 'RESPONSE'
+    }
+
+    headers = { 
+        'Content-Type': 'application/json', 
+        'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}"
+    }
+
+    requests.post(url, json=payload, headers=headers)
+
 if __name__ == '__main__': 
     initializeNgrokService()
 

@@ -50,10 +50,16 @@ def extractMessageContentFromPayload(payload):
     The payload should already in JSON format.
     """
 
-    entry = payload.get('entry', [])[0]  
-    changes = entry.get('changes', [])[0]
-    message_value = changes.get('value', {})
-    message = message_value.get('message', {})
-    messageContent = message.get('text', '')  # The actual message text
+    messageContent = payload['entry'][0]['changes'][0]['value']['message']['text']
 
     return messageContent
+
+def extractSenderIdFromPayload(payload): 
+    """
+    Return the senderId from the message payload sent from Meta API
+    The payload should already be in JSOn format.
+    """
+    
+    senderId =  payload['entry'][0]['changes'][0]['value']['sender']['id']
+
+    return senderId
