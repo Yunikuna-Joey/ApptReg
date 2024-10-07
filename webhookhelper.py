@@ -44,3 +44,16 @@ def getUserAgentHeader():
     # print(f"This is the userAgentField {userAgentField}")
     return userAgentField
 
+def extractMessageContentFromPayload(payload): 
+    """ 
+    Return the message content from the payload sent from Meta API 
+    The payload should already in JSON format.
+    """
+
+    entry = payload.get('entry', [])[0]  
+    changes = entry.get('changes', [])[0]
+    message_value = changes.get('value', {})
+    message = message_value.get('message', {})
+    messageContent = message.get('text', '')  # The actual message text
+
+    return messageContent

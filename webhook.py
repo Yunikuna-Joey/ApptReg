@@ -1,5 +1,5 @@
 from flask import Flask, request
-from webhookhelper import initializeNgrokService, getUserAgentHeader
+from webhookhelper import initializeNgrokService, getUserAgentHeader, extractMessageContentFromPayload
 import ngrok
 
 from dotenv import load_dotenv
@@ -64,10 +64,27 @@ def processPostRequest():
             return 'Verification failed', 401
 
         else:
+            """ 
+            The webhook will listen for a Message Event from Meta API 
+            We extract the message content from the webhook request 
+
+            Pass it into our logic for attempting an appointment
+                => Option1: What if we grab the intent from the first message? 
+                    So if message has intent: proceed with logic 
+                    (issue: this is a while loop, so how do we keep chat persistence(?) 
+                    as we are receiving Message Events one at a time (one message at a time))
+                    
+                    If no intent: we just generate a response from the LLM 
+                 
+            """
             # payload will have the information that we need to extract coming from meta api 
             payload = request.get_json()
+
+            extractMessageContentFromPayload(payload)
             
-            print(f"[Second Call]: This is the incoming payload: {payload}")
+
+            
+            # print(f"[Second Call]: This is the incoming payload: {payload}")
 
             # After processing the request, we need to return a 200 success code 
             return 'Message received', 200 
