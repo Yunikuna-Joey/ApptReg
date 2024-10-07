@@ -69,8 +69,8 @@ def processPostRequest():
             
             print(f"[Second Call]: This is the incoming payload: {payload}")
 
-            if payload: 
-                return 'Received test payload', 200 
+            # After processing the request, we need to return a 200 success code 
+            return 'Message received', 200 
 
     except Exception as e:
         return f"There was an error processing the request {e}", 403
