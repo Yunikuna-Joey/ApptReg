@@ -15,3 +15,8 @@
     - pip install dnspython [used to determine whether or not an email address can receive emails]
     - pip install flask
     - pip install ngrok
+
+3) Docs
+    - (Refer to docs on implementing sending a text-based message to an instagram user) https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api
+
+    

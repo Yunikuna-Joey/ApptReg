@@ -85,21 +85,25 @@ def processPostRequest():
 
             messageContent = extractMessageContentFromPayload(payload)
             senderId = extractSenderIdFromPayload(payload)
-            
-            response = sendMsg(messageContent, senderId)
 
+            # implement the chatbot logic 
+            responseMessageContent = additionScenario(senderId, messageContent)
+            
+            status, requestResponse = sendMsg(responseMessageContent, senderId)
+
+            print(f"Send message status: {status}, response: {requestResponse}")
             
             # print(f"[Second Call]: This is the incoming payload: {payload}")
 
             # After processing the request, we need to return a 200 success code 
-            return 'Message received', 200 
-            # return jsonify({"status": "ok"})
+            # return 'Message received', 200 
+            return jsonify({"status": "ok"}), 200
 
     except Exception as e:
         return f"There was an error processing the request {e}", 403
 
 def sendMsg(userId, messageContent): 
-    url = f"https://graph.facebook.com/v21.0/{YOUR_IG_PAGE_ID}/messages"
+    url = f"https://graph.instagram.com/v21.0/{os.getenv('INSTAGRAM_PAGE_ID')}/messages"
 
     payload = { 
         'recipient': {'id': userId}, 
@@ -109,10 +113,13 @@ def sendMsg(userId, messageContent):
 
     headers = { 
         'Content-Type': 'application/json', 
-        'Authorization': f"Bearer {os.getenv('ACCESS_TOKEN')}"
+        'Authorization': f"Bearer {os.getenv('INSTAGRAM_UAT')}"
     }
 
-    requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers)
+
+    print(f"Response Status: {response.staus_code}, Response Text: {response.text}")
+    return response.status_code, response.text
 
 if __name__ == '__main__': 
     initializeNgrokService()

@@ -30,5 +30,4 @@ def additionScenario(userId, userInput):
         response = chatModel.generate_content(userInput)
         return response
 
-                
 
