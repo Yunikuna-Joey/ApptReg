@@ -100,10 +100,13 @@ def processPostRequest():
             return jsonify({"status": "ok"}), 200
 
     except Exception as e:
+        print(f"There was an error with processing the request {e}")
         return f"There was an error processing the request {e}", 403
 
 def sendMsg(userId, messageContent): 
+    # url = f"https://graph.facebook.com/v21.0/{os.getenv('INSTAGRAM_PAGE_ID')}/messages"
     url = f"https://graph.instagram.com/v21.0/{os.getenv('INSTAGRAM_PAGE_ID')}/messages"
+
 
     payload = { 
         'recipient': {'id': userId}, 
@@ -118,7 +121,7 @@ def sendMsg(userId, messageContent):
 
     response = requests.post(url, json=payload, headers=headers)
 
-    print(f"Response Status: {response.staus_code}, Response Text: {response.text}")
+    print(f"Response Status: {response.status_code}, Response Text: {response.text}")
     return response.status_code, response.text
 
 if __name__ == '__main__': 

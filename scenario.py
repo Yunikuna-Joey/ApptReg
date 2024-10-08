@@ -27,7 +27,7 @@ def additionScenario(userId, userInput):
                 return prompt
 
     else: 
-        response = chatModel.generate_content(userInput)
+        response = chatModel.generate_content(userInput).text
         return response
 
 
