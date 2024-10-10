@@ -3,3 +3,5 @@ chatbot
 *.json
 *.pyc
 *.txt
+privacy.py
+templates
