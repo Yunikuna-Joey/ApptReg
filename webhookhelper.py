@@ -30,7 +30,7 @@ def initializeNgrokService():
     # start the tunnel with these parameters
     ngrokTunnel = ngrok.connect(
         proto="http", 
-        addr=5000, 
+        addr=5500, 
         domain=f"{os.getenv('NGROK_DOMAIN')}"
     )
 
