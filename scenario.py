@@ -21,7 +21,7 @@ def additionScenario(userId, userInput):
 
     if not intentObject: 
         intentObject = intentModel.generate_content(userInput)
-        session['intentObject'] = intentObject
+        session['intentObject'] = intentObject.text
 
     print(f"This is the value of intentObject {intentObject.text.lower()}")
 
@@ -107,6 +107,9 @@ def additionScenario(userId, userInput):
                 return prompt
 
     else: 
+        if intentObject:
+            intentObject = None
+            session['intentObject'] = None
         response = chatModel.generate_content(userInput).text
         return response
 
