@@ -10,7 +10,7 @@ def getUserSession(userId):
     if userId not in sessionManagement: 
         # intialize the session for the userId 
         sessionManagement[userId] = { 
-            'intentObject': '', 
+            'intentObject': None, 
             'eventObject': { 
                 'name': None, 
                 'number': None, 

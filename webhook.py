@@ -56,7 +56,7 @@ def verifyWebhook():
                     return challenge, 200 
     
     except Exception as e:
-        return f"There was an error processing the request {e}" 
+        return f"[Except_Block_VerifyWebhook]: There was an error processing the request {e}" 
     
 @app.route('/webhook', methods=['POST'])
 def processPostRequest():
@@ -120,8 +120,8 @@ def processPostRequest():
         return jsonify({"status": "ok"}), 200
 
     except Exception as e:
-        print(f"There was an error with processing the request {e}")
-        return f"There was an error processing the request {e}", 403
+        print(f"[Except_Block_ProcessRequest]: There was an error with processing the request {e}")
+        return f"[Except_Block_ProcessRequest]: There was an error processing the request {e}", 403
 
 def sendMsg(userId, messageContent): 
     # url = f"https://graph.instagram.com/v21.0/{os.getenv('INSTAGRAM_PAGE_ID')}/messages"
