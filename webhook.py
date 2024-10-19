@@ -97,6 +97,8 @@ def processPostRequest():
 
             # implement the chatbot logic 
             responseMessageContent = additionScenario(senderId, messageContent)
+
+            print(f"\nThis is the value of responseMessageContent {responseMessageContent}\n")
             
             # debugging variables
             status, requestResponse = sendMsg(senderId, responseMessageContent)
@@ -140,7 +142,7 @@ def sendMsg(userId, messageContent):
     }
 
     response = requests.post(url, json=payload, headers=headers)
-    # error that seems to be happening is that the message sent from the bot is being ran through essentially itself which shouldn't be happening
+    
     print(f"Response Status: {response.status_code}, Response Text: {response.text}")
     return response.status_code, response.text
 

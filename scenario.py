@@ -10,6 +10,7 @@ def additionScenario(userId, userInput):
     intentModel = initializeClassificationModel()
 
     session = getUserSession(userId) 
+    print(f"This is the value of current user session {session}")
 
     # exit conditions 
     if userInput.lower().strip() in ['exit', 'quit', 'stop']: 
@@ -21,7 +22,7 @@ def additionScenario(userId, userInput):
 
     if not intentObject: 
         intentObject = intentModel.generate_content(userInput)
-        session['intentObject'] = intentObject.text
+        session['intentObject'] = intentObject.text.strip()
 
     print(f"This is the value of intentObject {intentObject.text.lower()}")
 
