@@ -2,7 +2,7 @@ from zoneinfo import ZoneInfo
 from sessionManager import getUserSession, updateUserSession
 from model import initializeChatModel, initializeClassificationModel
 from helper import emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker
-from eventService import checkWeekendCondition, checkDayState, checkWorkHour, listAvailableTimeValidMonth, populateEventsForDay
+from eventService import checkWeekendCondition, checkDayState, checkWorkHour, listAvailableTimeValidMonth, populateAvailableTimesMonth, populateEventsForDay
 from dateutil import parser
 
 def additionScenario(userId, userInput): 
@@ -71,6 +71,7 @@ def additionScenario(userId, userInput):
                 
             elif currentField == 'start': 
                 try: 
+                    # we need a condition that retrieves the previous saved startTime in-memory from utilizing session management
                     startTime = parser.parse(userInput)
 
                     if checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False:
@@ -83,19 +84,29 @@ def additionScenario(userId, userInput):
                         elif checkWorkHour(startTime) == False: 
                             errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
                             return errorMessage
-                    
-                    listAvailableTimeValidMonth()
+
                     scheduledEventList = populateEventsForDay(startTime)
                     
                     newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
 
-                    # if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
+                    if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
+                        errorMessage = "Your requested time is not available. Here are the available times"
+                        availableTimeList = populateAvailableTimesMonth()
 
+                        return errorMessage + "\n" + availableTimeList
+                    
+                    eventObject['start'] = startTime
+                        
                 
                 except(ValueError, TypeError): 
                     errorMessage = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
                     return errorMessage
+
+            else: 
+                if 'facility' in userInput and field == 'location': 
+                    userInput = 'Onsite Appointment'
                 
+                eventObject[field] = userInput
 
         for field, value in eventObject.items(): 
             if value is None: 
@@ -112,5 +123,3 @@ def additionScenario(userId, userInput):
             session['intentObject'] = None
         response = chatModel.generate_content(userInput).text
         return response
-
-

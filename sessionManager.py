@@ -22,7 +22,8 @@ def getUserSession(userId):
             }, 
             'descriptionObject': None, 
             'serviceOffsetTime': 0,
-            'currentField': None
+            'currentField': None, 
+            'savedStartTime': None
         } 
     
     return sessionManagement[userId]
