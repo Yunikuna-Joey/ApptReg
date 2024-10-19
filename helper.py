@@ -92,7 +92,7 @@ def serviceTypeChecker(serviceType):
     """
     Checks if the user input is a valid service type 
     """
-    validInput = ['interior', 'exterior', 'both']
+    validInput = ['interior', 'Interior', 'exterior', 'Exterior', 'both', 'Both']
 
     if serviceType not in validInput: 
         return False 

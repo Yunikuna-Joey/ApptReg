@@ -88,7 +88,7 @@ def processPostRequest():
 
         # This will handle a normal message event 
         if 'message' in payloadIdentifier and payloadIdentifier['sender']['id'] != os.getenv('INSTAGRAM_PAGE_ID'):          # we need a condition so that the bot doesn't attempt to process itself
-            messageContent = extractMessageContentFromPayload(payload)
+            messageContent = extractMessageContentFromPayload(payload).strip()
             senderId = extractSenderIdFromPayload(payload)
 
             # print(f"This is the value of messageContent {messageContent}")
@@ -98,6 +98,7 @@ def processPostRequest():
             # implement the chatbot logic 
             responseMessageContent = additionScenario(senderId, messageContent)
             
+            # debugging variables
             status, requestResponse = sendMsg(senderId, responseMessageContent)
 
             # print(f"Send message status: {status}, response: {requestResponse}")

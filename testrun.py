@@ -56,6 +56,8 @@ def proto1():
         if not intentObject: 
             intentObject = intentModel.generate_content(userInput)
 
+        print(f"This is the value of intentObject {intentObject.text.lower()}")
+
         # if there was a 'create' intention then do something
         if intentObject.text.lower().strip() in ['create', 'appointment scheduling']: 
             # iterate over the eventObject items 
