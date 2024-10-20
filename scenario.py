@@ -6,26 +6,31 @@ from eventService import checkWeekendCondition, checkDayState, checkWorkHour, li
 from dateutil import parser
 
 def additionScenario(userId, userInput): 
-    chatModel = initializeChatModel() 
-    intentModel = initializeClassificationModel()
+    # intialize the chat model
+    chatModel = initializeChatModel()  
 
-    session = getUserSession(userId) 
+    # grab the current user session
+    session = getUserSession(userId)
+    # debugging statement 
     print(f"This is the value of current user session {session}")
 
     # exit conditions 
     if userInput.lower().strip() in ['exit', 'quit', 'stop']: 
         return "Ending the converstaion. Goodbye!"
 
+    # initialize variables to current user session
     intentObject = session['intentObject']
     eventObject = session['eventObject']
     currentField = session['currentField']      # used to maintain session
 
-    if not intentObject: 
+
+    # if there is not a valid intentObject, then create the model and determine the intent object [reduce redundant classification model intialization]
+    if not intentObject:
+        intentModel = initializeClassificationModel() 
         intentObject = intentModel.generate_content(userInput)
         session['intentObject'] = intentObject.text.strip()
 
-    print(f"This is the value of intentObject {intentObject.text.lower()}")
-
+    # if a create intent was made, execute logic for eventObject building to be added into the Google Calendar
     if intentObject.text.lower().strip() in ['create', 'appointment scheduling']: 
         # determine if there is a field in-progress 
         if currentField: 

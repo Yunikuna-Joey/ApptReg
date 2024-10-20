@@ -81,7 +81,6 @@ def processPostRequest():
         """
         # payload will have the information that we need to extract coming from meta api 
         payload = request.get_json()
-        # print(f"This is the incoming payload received {payload}")
 
         # this will help determine how to handle the payload request coming into the endpoint
         payloadIdentifier = payload['entry'][0]['messaging'][0]             # so far we keep track of a message event and a message_read(app reading the message from the client)
@@ -90,10 +89,6 @@ def processPostRequest():
         if 'message' in payloadIdentifier and payloadIdentifier['sender']['id'] != os.getenv('INSTAGRAM_PAGE_ID'):          # we need a condition so that the bot doesn't attempt to process itself
             messageContent = extractMessageContentFromPayload(payload).strip()
             senderId = extractSenderIdFromPayload(payload)
-
-            # print(f"This is the value of messageContent {messageContent}")
-            # print(f"This is the value of senderId {senderId}")
-            # print(f"This is the variable type of senderId {type(senderId)}")
 
             # implement the chatbot logic 
             responseMessageContent = additionScenario(senderId, messageContent)
@@ -107,10 +102,12 @@ def processPostRequest():
         
         # This will handle a read message event
         elif 'read' in payloadIdentifier:
+            print("[Event_Detection]: Triggered a read_message event")
             return jsonify({"status": "ok"}), 200
         
         # This will handle a message send event
         elif 'is_echo' in payloadIdentifier['message']: 
+            print("[Event_Detection]: Triggered a message send event")
             return jsonify({"status": "ok"}), 200
 
         # this should catch any other unhandled event that can be used for debugging
@@ -143,7 +140,7 @@ def sendMsg(userId, messageContent):
 
     response = requests.post(url, json=payload, headers=headers)
     
-    print(f"Response Status: {response.status_code}, Response Text: {response.text}")
+    # print(f"Response Status: {response.status_code}, Response Text: {response.text}")
     return response.status_code, response.text
 
 if __name__ == '__main__': 
