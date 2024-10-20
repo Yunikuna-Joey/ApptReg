@@ -50,7 +50,7 @@ def extractMessageContentFromPayload(payload):
     The payload should already in JSON format.
     """
 
-    messageContent = payload['entry'][0]['changes'][0]['value']['message']['text']
+    messageContent = payload['entry'][0]['messaging'][0]['message']['text']
 
     return messageContent
 
@@ -60,6 +60,6 @@ def extractSenderIdFromPayload(payload):
     The payload should already be in JSOn format.
     """
     
-    senderId =  payload['entry'][0]['changes'][0]['value']['sender']['id']
+    senderId =  payload['entry'][0]['messaging'][0]['sender']['id']
 
     return senderId

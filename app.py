@@ -138,7 +138,7 @@ if __name__ == "__main__":
                             Email address 
     """
     #* our scenarios 
-    # proto1() # add event scenario
+    proto1() # add event scenario
     # proto2() # delete event scenario
     # proto3() # update event scenarios
 
@@ -153,22 +153,22 @@ if __name__ == "__main__":
         'start': datetime(2024, 9, 21, 10, 15, 0)
     }
 
-    messagePayload = {'entry': [{'id': '0', 'time': 1728281463, 'changes': [{'field': 'messages', 'value': {'sender': {'id': '12334'}, 'recipient': {'id': '23245'}, 'timestamp': '1527459824', 'message': {'mid': 'random_mid', 'text': 'random_text'}}}]}], 'object': 'instagram'}
+    # messagePayload = {'entry': [{'id': '0', 'time': 1728281463, 'changes': [{'field': 'messages', 'value': {'sender': {'id': '12334'}, 'recipient': {'id': '23245'}, 'timestamp': '1527459824', 'message': {'mid': 'random_mid', 'text': 'random_text'}}}]}], 'object': 'instagram'}
 
     # entry = messagePayload.get('entry', [])[0]  
     # changes = entry.get('changes', [])[0]
     # message_value = changes.get('value', {})
-    senderId = messagePayload['entry'][0]['changes'][0]['value']['sender']['id']
+    # senderId = messagePayload['entry'][0]['changes'][0]['value']['sender']['id']
     # message = message_value.get('message', {})
     # message_text = message.get('text', '')  # The actual message text
-    message_text = messagePayload['entry'][0]['changes'][0]['value']['message']['text']
+    # message_text = messagePayload['entry'][0]['changes'][0]['value']['message']['text']
 
     # print(f"This is the entry value {entry}")
     # print(f"This is the changes value {changes}")
     # print(f"This is message_value value {message_value}")
-    print(f"This is the senderId {senderId}")
+    # print(f"This is the senderId {senderId}")
     # print(f"This is message value {message}")
-    print(f"This is message_text {message_text}")
+    # print(f"This is message_text {message_text}")
     
     
 
