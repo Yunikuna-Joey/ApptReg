@@ -1,8 +1,6 @@
 # SQLAlchemy Database imports
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey
-from sqlalchemy.orm import relationship, sessionmaker 
+from sqlalchemy import Column, Integer, String, JSON
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
 
 Base = declarative_base()
 
@@ -22,21 +20,35 @@ class UserSession(Base):
 
     eventObject = Column(JSON)
 
+    # Constructor
+    def __init__(self, userId, sessionData): 
+        self.userId = userId
+        self.intentObject = sessionData['intentObject']
+        self.descriptionObject = sessionData['descriptionObject']
+        self.serviceDuration = sessionData['serviceDuration']
+        self.currentField = sessionData['currentField']
+        self.savedStartTime = sessionData['savedStartTime']
+        self.eventObject = sessionData['eventObject']
+
+    # Create a new user session in the database
+    @classmethod
+    def createUserSession(cls, userId, sessionData, dbSession): 
+        newSession = cls(userId, sessionData)
+        dbSession.add(newSession)
+        dbSession.commit()
+        return newSession
+
+    # Retrieve a user session from the database
+    @classmethod
+    def getUserSession(cls, userId, dbSession): 
+        return dbSession.query(cls).filter_by(userId=userId).first()
+
     def __repr__(self):
         return f"<UserSession(user_id={self.user_id}, intent_object={self.intent_object})>"
     
 def initializeDatabase(engine): 
     Base.metadata.create_all(engine)
 
-#* initialize a current session and database connected to the session-changes
-engine = create_engine('sqlite:///sessions.db', echo=True)
-Session = sessionmaker(bind=engine)
-dbSession = Session()
-initializeDatabase(engine)
-
-# Grab a user session
-def getUserSession(userId): 
-    return dbSession.query(UserSession).filter_by(userId=userId).first()
 
 
 

@@ -5,6 +5,11 @@ from flask import Flask, request, jsonify
 from webhookhelper import extractSenderIdFromPayload, initializeNgrokService, getUserAgentHeader, extractMessageContentFromPayload
 from scenario import additionScenario
 
+# database imports
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sessionManager import initializeDatabase
+
 import requests
 
 from dotenv import load_dotenv
@@ -12,6 +17,11 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
+#* initialize a current session and database connected to the session-changes
+engine = create_engine('sqlite:///sessions.db', echo=True)
+Session = sessionmaker(bind=engine)
+dbSession = Session()
+initializeDatabase(engine)
 
 verifyToken = os.getenv('VERIFY_TOKEN')
 accessList = [os.getenv('USER_AGENT_FIELD'), os.getenv('WEBHOOK'), os.getenv('IG_MSG_AGENT')]

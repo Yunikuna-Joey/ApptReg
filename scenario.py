@@ -1,9 +1,11 @@
+# Utility imoprts
 from zoneinfo import ZoneInfo
-from sessionManager import getUserSession, updateUserSession
+from dateutil import parser
+
+# Helper file imports
 from model import initializeChatModel, initializeClassificationModel
 from helper import emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker
-from eventService import checkWeekendCondition, checkDayState, checkWorkHour, listAvailableTimeValidMonth, populateAvailableTimesMonth, populateEventsForDay
-from dateutil import parser
+from eventService import checkWeekendCondition, checkDayState, checkWorkHour, populateAvailableTimesMonth, populateEventsForDay
 
 def additionScenario(userId, userInput): 
     # intialize the chat model
