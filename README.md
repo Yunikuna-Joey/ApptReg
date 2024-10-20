@@ -16,6 +16,7 @@
     - pip install flask
     - pip install ngrok
     - pip install Flask-Mail
+    - pip install flask-cors
 
 3) Docs
     - (Refer to docs on implementing sending a text-based message to an instagram user) https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api
