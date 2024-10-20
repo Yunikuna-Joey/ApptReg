@@ -51,50 +51,64 @@ def additionScenario(userId, userInput, databaseSession):
         if currentField: 
             # Field validation
             if currentField == 'number': 
+                # Error check with function here 
                 if phoneNumberChecker(userInput) == False:
                     errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-456"
-                    return  errorMessage
+                    return errorMessage
                 
-                eventObject['number'] = userInput
-                session['currentField'] = None 
+                # Commit changes into the database 
+                session.eventObject['number'] = userInput
+                session.currentField = None 
+                databaseSession.commit()                                
             
             elif currentField == 'email': 
+                # Error checking with function
                 if emailChecker(userInput) == False: 
                     errorMessage = "I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails."
                     return errorMessage
 
-                eventObject['email'] = userInput
-                session['currentField'] = None 
+                # Commit changes into the database
+                session.eventObject['email'] = userInput
+                session.currentField['currentField'] = None 
+                databaseSession.commit()
             
             elif currentField == 'carModel': 
+                # Error checking 
                 if carDescriptionchecker(userInput) == False: 
                     errorMessage = "I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)"
                     return errorMessage
 
-                eventObject['carModel'] = userInput
-                session['currentField'] = None 
+                # Commit changes into the database 
+                session.eventObject['carModel'] = userInput 
+                session.currentField = None 
+                databaseSession.commit()                 
             
             elif currentField == 'description': 
+                # Error checking 
                 if serviceTypeChecker(userInput) == False: 
                     errorMessage = "That is not a service we offer. Please choose a service we offer: interior, exterior, or both."
                     return errorMessage
 
+                # Modify the user input if they said both
                 if 'both' in userInput or 'Both' in userInput: 
                     userInput = 'Exterior & Interior'
-                    session['serviceOffsetTime'] = serviceToHours(userInput)
-                    eventObject['description'] = userInput
-                    session['currentField'] == None 
+                    session.serviceDuration = serviceToHours(userInput)
+                    session.eventObject['description'] = userInput
+                    session.currentField = None
+                    databaseSession.commit()
                 
                 else: 
-                    session['serviceOffsetTime'] == serviceToHours(userInput)
-                    eventObject['description'] = userInput
-                    session['currentField'] == None 
+                    session.serviceDuration = serviceToHours(userInput)
+                    session.eventObject['description'] = userInput
+                    session.currentField = None 
+                    databaseSession.commit()
                 
             elif currentField == 'start': 
                 try: 
                     # we need a condition that retrieves the previous saved startTime in-memory from utilizing session management
                     startTime = parser.parse(userInput)
 
+                    # Error checking the requested time 
                     if checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False:
                         if checkWeekendCondition(startTime) == False: 
                             errorMessage = "Please choose a weekend as we are not taking appointments on weekdays."
@@ -106,18 +120,22 @@ def additionScenario(userId, userInput, databaseSession):
                             errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
                             return errorMessage
 
+                    # Gather all the events for the client-requested date
                     scheduledEventList = populateEventsForDay(startTime)
                     
+                    # convert the requested start-time for comparison against the existing list of events 
                     newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
 
+                    # error checking against the client requested time and already booked-time
                     if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
                         errorMessage = "Your requested time is not available. Here are the available times"
                         availableTimeList = populateAvailableTimesMonth()
 
                         return errorMessage + "\n" + availableTimeList
                     
-                    eventObject['start'] = startTime
-                        
+                    # Push changes into database
+                    session.eventObject['start'] = startTime
+                    databaseSession.commit()                        
                 
                 except(ValueError, TypeError): 
                     errorMessage = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
@@ -127,12 +145,15 @@ def additionScenario(userId, userInput, databaseSession):
                 if 'facility' in userInput and field == 'location': 
                     userInput = 'Onsite Appointment'
                 
-                eventObject[field] = userInput
+                session.eventObject[field] = userInput
+                databaseSession.commit()
 
-        for field, value in eventObject.items(): 
+        # Iterate through the user session's event object
+        for field, value in session.eventObject.items(): 
             if value is None: 
-                # set the current field for in-memory session management
-                session['currentField'] = field
+                # set the current field for database session management
+                session.currentField = field 
+                databaseSession.commit()
 
                 # generate a prompt for the missing field 
                 prompt = generatePrompt(field)
