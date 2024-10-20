@@ -7,12 +7,20 @@ from model import initializeChatModel, initializeClassificationModel
 from helper import emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker
 from eventService import checkWeekendCondition, checkDayState, checkWorkHour, populateAvailableTimesMonth, populateEventsForDay
 
-def additionScenario(userId, userInput): 
+# database import 
+from sessionManager import UserSession
+
+def additionScenario(userId, userInput, databaseSession): 
     # intialize the chat model
     chatModel = initializeChatModel()  
 
     # grab the current user session
-    session = getUserSession(userId)
+    session = UserSession.getUserSession(userId, databaseSession)
+
+    if session is None: 
+        # constructor class being called for default values associated with instagramUID
+        session = UserSession(userId)
+
     # debugging statement 
     print(f"This is the value of current user session {session}")
 
@@ -21,16 +29,20 @@ def additionScenario(userId, userInput):
         return "Ending the converstaion. Goodbye!"
 
     # initialize variables to current user session
-    intentObject = session['intentObject']      # This is used to refer to the value in the current session
-    eventObject = session['eventObject']
-    currentField = session['currentField']      # used to maintain session
-
+    intentObject = session.intentObject
+    eventObject = session.eventObject 
+    currentField = session.currentField
 
     # if there is not a valid intentObject, then create the model and determine the intent object [reduce redundant classification model intialization]
     if not intentObject:
         intentModel = initializeClassificationModel() 
         intentResponse = intentModel.generate_content(userInput)
         intentObject = intentResponse.text.strip()
+
+        # save the intentObject entry with the generated response
+        session.intentObject = intentObject
+        # commit the change from None => intent value 
+        databaseSession.commit()
 
     # if a create intent was made, execute logic for eventObject building to be added into the Google Calendar
     #* This is the possible source of error 
@@ -127,7 +139,9 @@ def additionScenario(userId, userInput):
                 return prompt
 
     else: 
+        # reset if something was made
         if intentObject:
-            intentObject = None
+            session.intentObject = None 
+            databaseSession.commit()
         response = chatModel.generate_content(userInput).text
         return response

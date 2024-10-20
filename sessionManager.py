@@ -14,21 +14,29 @@ class UserSession(Base):
     # Fields 
     intentObject = Column(String, nullable=True)
     descriptionObject = Column(String, nullable=True)
-    serviceDuration = Column(Integer, default=0)
-    currentField = Column(String, nullable=False)
-    savedStartTime = Column(String, nullable=False)
+    serviceDuration = Column(Integer, nullable=True)
+    currentField = Column(String, nullable=True)
+    savedStartTime = Column(String, nullable=True)
 
     eventObject = Column(JSON)
 
     # Constructor
-    def __init__(self, userId, sessionData): 
+    def __init__(self, userId): 
         self.userId = userId
-        self.intentObject = sessionData['intentObject']
-        self.descriptionObject = sessionData['descriptionObject']
-        self.serviceDuration = sessionData['serviceDuration']
-        self.currentField = sessionData['currentField']
-        self.savedStartTime = sessionData['savedStartTime']
-        self.eventObject = sessionData['eventObject']
+        self.intentObject = None
+        self.descriptionObject = None
+        self.serviceDuration = None
+        self.currentField = None
+        self.savedStartTime = None
+        self.eventObject = {
+            'name': None, 
+            'number': None, 
+            'email': None, 
+            'carModel': None, 
+            'location': None,
+            'description': None,
+            'start': None,
+        }
 
     # Create a new user session in the database
     @classmethod

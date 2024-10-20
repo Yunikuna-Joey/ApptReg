@@ -104,9 +104,7 @@ def processPostRequest():
             senderId = extractSenderIdFromPayload(payload)
 
             # implement the chatbot logic 
-            responseMessageContent = additionScenario(senderId, messageContent)
-
-            print(f"\nThis is the value of responseMessageContent {responseMessageContent}\n")
+            responseMessageContent = additionScenario(senderId, messageContent, dbSession)
             
             # debugging variables
             status, requestResponse = sendMsg(senderId, responseMessageContent)
