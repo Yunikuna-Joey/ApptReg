@@ -49,10 +49,12 @@ class UserSession(Base):
     # Retrieve a user session from the database
     @classmethod
     def getUserSession(cls, userId, dbSession): 
-        return dbSession.query(cls).filter_by(userId=userId).first()
+        userSession = dbSession.query(cls).filter_by(userId=userId).first()
+        return userSession
 
+    # This creates logs in the terminal to understand what is happening with the database [optional]
     def __repr__(self):
-        return f"<UserSession(user_id={self.user_id}, intent_object={self.intent_object})>"
+        return f"<UserSession(user_id={self.userId}, intent_object={self.intentObject})>"
     
 def initializeDatabase(engine): 
     Base.metadata.create_all(engine)

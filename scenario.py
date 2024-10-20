@@ -20,6 +20,8 @@ def additionScenario(userId, userInput, databaseSession):
     if session is None: 
         # constructor class being called for default values associated with instagramUID
         session = UserSession(userId)
+        databaseSession.add(session)
+        databaseSession.commit()
 
     # debugging statement 
     print(f"This is the value of current user session {session}")

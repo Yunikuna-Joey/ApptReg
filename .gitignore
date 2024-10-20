@@ -5,3 +5,4 @@ chatbot
 *.txt
 privacy.py
 templates
+*.db
