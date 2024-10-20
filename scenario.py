@@ -57,8 +57,8 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
                 
                 # Commit changes into the database 
-                session.eventObject['number'] = userInput
-                session.currentField = None 
+                eventObject['number'] = userInput
+                currentField = None 
                 databaseSession.commit()                                
             
             elif currentField == 'email': 
@@ -68,8 +68,8 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
 
                 # Commit changes into the database
-                session.eventObject['email'] = userInput
-                session.currentField['currentField'] = None 
+                eventObject['email'] = userInput
+                currentField['currentField'] = None 
                 databaseSession.commit()
             
             elif currentField == 'carModel': 
@@ -79,8 +79,8 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
 
                 # Commit changes into the database 
-                session.eventObject['carModel'] = userInput 
-                session.currentField = None 
+                eventObject['carModel'] = userInput 
+                currentField = None 
                 databaseSession.commit()                 
             
             elif currentField == 'description': 
@@ -93,14 +93,14 @@ def additionScenario(userId, userInput, databaseSession):
                 if 'both' in userInput or 'Both' in userInput: 
                     userInput = 'Exterior & Interior'
                     session.serviceDuration = serviceToHours(userInput)
-                    session.eventObject['description'] = userInput
-                    session.currentField = None
+                    eventObject['description'] = userInput
+                    currentField = None
                     databaseSession.commit()
                 
                 else: 
                     session.serviceDuration = serviceToHours(userInput)
-                    session.eventObject['description'] = userInput
-                    session.currentField = None 
+                    eventObject['description'] = userInput
+                    currentField = None 
                     databaseSession.commit()
                 
             elif currentField == 'start': 
@@ -134,7 +134,7 @@ def additionScenario(userId, userInput, databaseSession):
                         return errorMessage + "\n" + availableTimeList
                     
                     # Push changes into database
-                    session.eventObject['start'] = startTime
+                    eventObject['start'] = startTime
                     databaseSession.commit()                        
                 
                 except(ValueError, TypeError): 
@@ -145,14 +145,14 @@ def additionScenario(userId, userInput, databaseSession):
                 if 'facility' in userInput and field == 'location': 
                     userInput = 'Onsite Appointment'
                 
-                session.eventObject[field] = userInput
+                eventObject[field] = userInput
                 databaseSession.commit()
 
         # Iterate through the user session's event object
-        for field, value in session.eventObject.items(): 
+        for field, value in eventObject.items(): 
             if value is None: 
                 # set the current field for database session management
-                session.currentField = field 
+                currentField = field 
                 databaseSession.commit()
 
                 # generate a prompt for the missing field 
