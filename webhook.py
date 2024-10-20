@@ -133,6 +133,7 @@ def processPostRequest():
         print(f"[Except_Block_ProcessRequest]: There was an error with processing the request {e}")
         return f"[Except_Block_ProcessRequest]: There was an error processing the request {e}", 403
 
+# Allows for meta app to send a message to the requested user 
 def sendMsg(userId, messageContent): 
     # url = f"https://graph.instagram.com/v21.0/{os.getenv('INSTAGRAM_PAGE_ID')}/messages"
     # simplified, but should look into what the full url should be... 

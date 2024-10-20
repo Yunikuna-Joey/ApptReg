@@ -4,11 +4,16 @@ from dateutil import parser
 
 # Helper file imports
 from model import initializeChatModel, initializeClassificationModel
-from helper import emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker
+from helper import emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
 from eventService import checkWeekendCondition, checkDayState, checkWorkHour, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
+
+# environment variables
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 def additionScenario(userId, userInput, databaseSession): 
     # intialize the chat model
@@ -19,7 +24,8 @@ def additionScenario(userId, userInput, databaseSession):
 
     if session is None: 
         # constructor class being called for default values associated with instagramUID
-        session = UserSession(userId)
+        instagramUsername = getInstagramUsername(userId, os.getenv('INSTAGRAM_UAT'))
+        session = UserSession(userId, instagramUsername)
         databaseSession.add(session)
         databaseSession.commit()
 

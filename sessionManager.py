@@ -10,6 +10,7 @@ class UserSession(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     userId = Column(String, unique=True, nullable=False)
+    instagramUsername = Column(String, unique=True, nullable=False)
 
     # Fields 
     intentObject = Column(String, nullable=True)
@@ -21,8 +22,9 @@ class UserSession(Base):
     eventObject = Column(JSON)
 
     # Constructor
-    def __init__(self, userId): 
+    def __init__(self, userId, instagramUsername): 
         self.userId = userId
+        self.instagramUsername = instagramUsername
         self.intentObject = None
         self.descriptionObject = None
         self.serviceDuration = None
@@ -38,7 +40,7 @@ class UserSession(Base):
             'start': None,
         }
 
-    # Create a new user session in the database
+    # Create a new user session in the database [Possible override | conflict with constructor class]
     @classmethod
     def createUserSession(cls, userId, sessionData, dbSession): 
         newSession = cls(userId, sessionData)

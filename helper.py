@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 import platform 
 import re 
 import dns.resolver
+import requests
 
 # converts datetime objects for the listAvailable function 
 def convertDateTime(dateTimeObject, duration): 
@@ -150,3 +151,23 @@ def generatePrompt(field):
     }
 
     return prompts.get(field, "Could you provide more information?")
+
+def getInstagramUsername(userId, metaAccessToken): 
+    """
+    This converts a userId into an official Instagram username
+    """
+    url = f"https://graph.instagram.com/{userId}"
+    params = { 
+        'fields': 'username', 
+        'access_token': metaAccessToken
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200: 
+        data = response.json() 
+        return data['username']
+
+    else: 
+        print(f"Error: {response.status_code}")
+        return None 
