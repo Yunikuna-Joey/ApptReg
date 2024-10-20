@@ -19,7 +19,7 @@ def additionScenario(userId, userInput):
         return "Ending the converstaion. Goodbye!"
 
     # initialize variables to current user session
-    intentObject = session['intentObject']
+    intentObject = session['intentObject']      # This is used to refer to the value in the current session
     eventObject = session['eventObject']
     currentField = session['currentField']      # used to maintain session
 
@@ -27,11 +27,12 @@ def additionScenario(userId, userInput):
     # if there is not a valid intentObject, then create the model and determine the intent object [reduce redundant classification model intialization]
     if not intentObject:
         intentModel = initializeClassificationModel() 
-        intentObject = intentModel.generate_content(userInput)
-        session['intentObject'] = intentObject.text.strip()
+        intentResponse = intentModel.generate_content(userInput)
+        intentObject = intentResponse.text.strip()
 
     # if a create intent was made, execute logic for eventObject building to be added into the Google Calendar
-    if intentObject.text.lower().strip() in ['create', 'appointment scheduling']: 
+    #* This is the possible source of error 
+    if intentObject in ['create', 'appointment scheduling']: 
         # determine if there is a field in-progress 
         if currentField: 
             # Field validation
@@ -126,6 +127,5 @@ def additionScenario(userId, userInput):
     else: 
         if intentObject:
             intentObject = None
-            session['intentObject'] = None
         response = chatModel.generate_content(userInput).text
         return response

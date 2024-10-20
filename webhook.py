@@ -1,4 +1,7 @@
+# Flask imports
 from flask import Flask, request, jsonify
+
+# helper file imports
 from webhookhelper import extractSenderIdFromPayload, initializeNgrokService, getUserAgentHeader, extractMessageContentFromPayload
 from scenario import additionScenario
 
