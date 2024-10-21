@@ -1,5 +1,5 @@
 # SQLAlchemy Database imports
-from sqlalchemy import Column, Integer, String, JSON
+from sqlalchemy import Column, Integer, String, JSON, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.mutable import MutableDict
 
@@ -19,6 +19,8 @@ class UserSession(Base):
     serviceDuration = Column(Integer, nullable=True)
     currentField = Column(String, nullable=True)
     savedStartTime = Column(String, nullable=True)
+    confirmationShown = Column(Boolean, nullable=True)
+    currentConfirmationField = Column(String, nullable=True)
 
     eventObject = Column(MutableDict.as_mutable(JSON))
 
@@ -31,6 +33,8 @@ class UserSession(Base):
         self.serviceDuration = None
         self.currentField = None
         self.savedStartTime = None
+        self.confirmationShown = None
+        self.currentConfirmationField = None
         self.eventObject = {
             'name': None, 
             'number': None, 

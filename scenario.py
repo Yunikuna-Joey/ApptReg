@@ -22,6 +22,7 @@ def additionScenario(userId, userInput, databaseSession):
     # grab the current user session
     session = UserSession.getUserSession(userId, databaseSession)
 
+    # Create a new user session entry in the database if client is not already in the database
     if session is None: 
         # constructor class being called for default values associated with instagramUID
         instagramUsername = getInstagramUsername(userId, os.getenv('INSTAGRAM_UAT'))
@@ -171,18 +172,42 @@ def additionScenario(userId, userInput, databaseSession):
         #*****************************Confirmation Section**************************************************
         # only create this map when all of the fields of the eventObject are not None [filled out]
         if all(value is not None for value in session.eventObject.values()): 
-            languageFieldMap = { 
-                'name': ['name', 'change name', 'update name'],
-                'number': ['phone', 'number', 'update phone', 'change number'],
-                'email': ['email', 'update email', 'change email'],
-                'carModel': ['car', 'update car', 'change car', 'car model'],
-                'location': ['location', 'change location', 'update location'],
-                'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
-                'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
-            }
+            # parse the database for the current client confirmation field 
+            confirmationField = session.currentConfirmationField
 
-            # This returns the message with all of the details parsed from the user 
-            return displayConfirmationMessage(session.eventObject, session.serviceDuration)
+            # return a confirmation message if the user has not seen a confirmation message 
+            if session.confirmationShown is None:
+                confirmationPrompt = "Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'."
+
+                # This returns the message with all of the details parsed from the user and the prompt for the user to make a decision
+                return confirmationPrompt + "\n" + displayConfirmationMessage(session.eventObject, session.serviceDuration)
+            
+            # otherwise proceed with determining which field to edit and continue with story adding logic 
+            else: 
+                languageFieldMap = { 
+                    'name': ['name', 'change name', 'update name'],
+                    'number': ['phone', 'number', 'update phone', 'change number'],
+                    'email': ['email', 'update email', 'change email'],
+                    'carModel': ['car', 'update car', 'change car', 'car model'],
+                    'location': ['location', 'change location', 'update location'],
+                    'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
+                    'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
+                }
+
+                if confirmationField: 
+                    # Field validation 
+                    pass
+                
+                # iterate through the potential fields that the user wants to edit 
+                for field, keywords in languageFieldMap.items(): 
+                    # if the userInput matches a field to edit 
+                    if any(keyword in userInput for keyword in keywords): 
+                        # set the current confirmation field and then return the prompt associated with the field 
+                        session.currentConfirmationField = field
+                        databaseSession.commit()
+
+                        prompt = generatePrompt(field)
+                        return prompt
         
 
 
