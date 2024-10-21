@@ -1,6 +1,7 @@
 # SQLAlchemy Database imports
 from sqlalchemy import Column, Integer, String, JSON
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.mutable import MutableDict
 
 Base = declarative_base()
 
@@ -19,7 +20,7 @@ class UserSession(Base):
     currentField = Column(String, nullable=True)
     savedStartTime = Column(String, nullable=True)
 
-    eventObject = Column(JSON)
+    eventObject = Column(MutableDict.as_mutable(JSON))
 
     # Constructor
     def __init__(self, userId, instagramUsername): 

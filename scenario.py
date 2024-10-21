@@ -4,7 +4,7 @@ from dateutil import parser
 
 # Helper file imports
 from model import initializeChatModel, initializeClassificationModel
-from helper import emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
+from helper import displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
 from eventService import checkWeekendCondition, checkDayState, checkWorkHour, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
@@ -36,7 +36,7 @@ def additionScenario(userId, userInput, databaseSession):
     if userInput.lower().strip() in ['exit', 'quit', 'stop']: 
         return "Ending the converstaion. Goodbye!"
 
-    # initialize variables to current user session
+    # initialize variables to current user session [references]
     intentObject = session.intentObject
     eventObject = session.eventObject 
     currentField = session.currentField
@@ -53,7 +53,6 @@ def additionScenario(userId, userInput, databaseSession):
         databaseSession.commit()
 
     # if a create intent was made, execute logic for eventObject building to be added into the Google Calendar
-    #* This is the possible source of error 
     if intentObject in ['create', 'appointment scheduling']: 
         # determine if there is a field in-progress 
         if currentField: 
@@ -65,8 +64,8 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
                 
                 # Commit changes into the database 
-                eventObject['number'] = userInput
-                currentField = None 
+                session.eventObject[currentField] = userInput
+                session.currentField = None 
                 databaseSession.commit()                                
             
             elif currentField == 'email': 
@@ -76,8 +75,8 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
 
                 # Commit changes into the database
-                eventObject['email'] = userInput
-                currentField['currentField'] = None 
+                session.eventObject[currentField] = userInput
+                session.currentField = None 
                 databaseSession.commit()
             
             elif currentField == 'carModel': 
@@ -87,8 +86,8 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
 
                 # Commit changes into the database 
-                eventObject['carModel'] = userInput 
-                currentField = None 
+                session.eventObject[currentField] = userInput 
+                session.currentField = None 
                 databaseSession.commit()                 
             
             elif currentField == 'description': 
@@ -101,14 +100,14 @@ def additionScenario(userId, userInput, databaseSession):
                 if 'both' in userInput or 'Both' in userInput: 
                     userInput = 'Exterior & Interior'
                     session.serviceDuration = serviceToHours(userInput)
-                    eventObject['description'] = userInput
-                    currentField = None
+                    session.eventObject[currentField] = userInput
+                    session.currentField = None
                     databaseSession.commit()
                 
                 else: 
                     session.serviceDuration = serviceToHours(userInput)
-                    eventObject['description'] = userInput
-                    currentField = None 
+                    session.eventObject[currentField] = userInput
+                    session.currentField = None 
                     databaseSession.commit()
                 
             elif currentField == 'start': 
@@ -142,7 +141,8 @@ def additionScenario(userId, userInput, databaseSession):
                         return errorMessage + "\n" + availableTimeList
                     
                     # Push changes into database
-                    eventObject['start'] = startTime
+                    session.eventObject[currentField] = startTime
+                    session.currentField = None
                     databaseSession.commit()                        
                 
                 except(ValueError, TypeError): 
@@ -150,22 +150,41 @@ def additionScenario(userId, userInput, databaseSession):
                     return errorMessage
 
             else: 
-                if 'facility' in userInput and field == 'location': 
+                if 'facility' in userInput and currentField == 'location': 
                     userInput = 'Onsite Appointment'
-                
-                eventObject[field] = userInput
+                 
+                session.eventObject[currentField] = userInput
+                session.currentField = None
                 databaseSession.commit()
 
         # Iterate through the user session's event object
         for field, value in eventObject.items(): 
             if value is None: 
                 # set the current field for database session management
-                currentField = field 
+                session.currentField = field 
                 databaseSession.commit()
 
                 # generate a prompt for the missing field 
                 prompt = generatePrompt(field)
                 return prompt
+        
+        #*****************************Confirmation Section**************************************************
+        # only create this map when all of the fields of the eventObject are not None [filled out]
+        if all(value is not None for value in session.eventObject.values()): 
+            languageFieldMap = { 
+                'name': ['name', 'change name', 'update name'],
+                'number': ['phone', 'number', 'update phone', 'change number'],
+                'email': ['email', 'update email', 'change email'],
+                'carModel': ['car', 'update car', 'change car', 'car model'],
+                'location': ['location', 'change location', 'update location'],
+                'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
+                'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
+            }
+
+            # This returns the message with all of the details parsed from the user 
+            return displayConfirmationMessage(session.eventObject, session.serviceDuration)
+        
+
 
     else: 
         # reset if something was made

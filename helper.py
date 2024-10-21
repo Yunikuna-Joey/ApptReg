@@ -112,8 +112,8 @@ Cleaning: {eventObject['description']}
 Date: {eventObject['start'].strftime('%B %d, %Y')}
 Time: {eventObject['start'].strftime('%I:%M %p')} - {(eventObject['start'] + timedelta(hours=duration)).strftime('%I:%M %p')}
     """
-    print(confirmationMsg)
-    # return confirmationMsg
+    # print(confirmationMsg)
+    return confirmationMsg
 
 def serviceToHours(serviceType): 
     """ 
