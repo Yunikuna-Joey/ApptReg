@@ -5,7 +5,7 @@ from dateutil import parser
 # Helper file imports
 from model import initializeChatModel, initializeClassificationModel
 from helper import displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import checkWeekendCondition, checkDayState, checkWorkHour, populateAvailableTimesMonth, populateEventsForDay
+from eventService import checkWeekendCondition, checkDayState, checkWorkHour, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -179,6 +179,9 @@ def additionScenario(userId, userInput, databaseSession):
             if session.confirmationShown is None:
                 confirmationPrompt = "Is there anything you'd like to change in your appointment details? You can say things like 'change the car model' or 'update the email. If you are done making changes, simply say 'Done'."
 
+                # Toggle the session to be true 
+                session.confirmationShown = True 
+
                 # This returns the message with all of the details parsed from the user and the prompt for the user to make a decision
                 return confirmationPrompt + "\n" + displayConfirmationMessage(session.eventObject, session.serviceDuration)
             
@@ -196,8 +199,107 @@ def additionScenario(userId, userInput, databaseSession):
 
                 if confirmationField: 
                     # Field validation 
-                    pass
-                
+                    if confirmationField == 'number': 
+                        if phoneNumberChecker(userInput) == False: 
+                            errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567"
+                            return errorMessage 
+                        
+                        session.eventObject[confirmationField] = userInput
+                        session.currentConfirmationField = None
+                        session.confirmationShown = False
+                        databaseSession.commit()
+                    
+                    elif confirmationField == 'email': 
+                        if emailChecker(userInput) == False: 
+                            errorMessage = "I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails."
+                            return errorMessage
+                        
+                        session.eventObject[confirmationField] = userInput
+                        session.currentConfirmationField = None 
+                        session.confirmationShown = False
+                        databaseSession.commit()
+
+                    elif confirmationField == 'carModel': 
+                        if carDescriptionchecker(userInput) == False: 
+                            errorMessage = "I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)"
+                            return errorMessage
+                    
+                        session.eventObject[confirmationField] = userInput
+                        session.currentConfirmationField = None 
+                        session.confirmationShown = False
+                        databaseSession.commit()
+                    
+                    elif confirmationField == 'description': 
+                        # if we are changing the service type, we need to check if the allotted time is sufficient
+                        prevDurationTime = session.serviceDuration
+
+                        #* Determine if we can change the eventObject description before checking if the time is available
+                        if 'both' in userInput or 'Both' in userInput: 
+                            userInput = 'Exterior & Interior'
+                            session.serviceDuration = serviceToHours(userInput)
+                            session.eventObject[confirmationField] = userInput
+                            session.currentConfirmationField = None 
+                            session.confirmationShown = False
+                            databaseSession.commit()
+                        #* Same objective as the if conditional 
+                        else: 
+                            session.serviceDuration = serviceToHours(userInput)
+                            session.eventObject[confirmationField] = userInput
+                            session.currentConfirmationField = None 
+                            session.confirmationShown = False
+                            databaseSession.commit()
+                        
+                        #* Fill in Later.
+                        if session.serviceDuration > prevDurationTime:
+                            # check if the current startTime is avaiable for the new duration 
+                            if isTimeAvailable(eventObject['start'], session.serviceDuration) == False: 
+                                pass
+
+                    elif confirmationField == 'start': 
+                        try: 
+                            startTime = parser.parse(userInput)
+
+                            if checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False:
+                                if checkWeekendCondition(startTime) == False: 
+                                    errorMessage = "Please choose a weekend as we are not taking appointments on weekdays."
+                                    return errorMessage
+                                elif checkDayState(startTime) == False: 
+                                    errorMessage = "Please choose a valid day not in the past."
+                                    return errorMessage
+                                elif checkWorkHour(startTime) == False: 
+                                    errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
+                                    return errorMessage
+                            
+                            scheduledEventList = populateEventsForDay(startTime)
+
+                            newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
+
+                            if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
+                                errorMessage = "Your requested time is not available. Here are the available times"
+                                availableTimeList = populateAvailableTimesMonth()
+
+                                return errorMessage + "\n" + availableTimeList
+                            
+                            # push changes into the database 
+                            session.eventObject[confirmationField] = startTime 
+                            session.currentConfirmationField = None 
+                            session.confirmationShown = False
+                            databaseSession.commit()
+                        
+                        except(ValueError, TypeError):
+                            errorMessage = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
+                            return errorMessage
+                    
+                    else: 
+                        if 'facility' in userInput and confirmationField == 'location': 
+                            userInput = 'Onsite Appointment'
+                        
+                        session.eventObject[confirmationField] = userInput
+                        session.currentConfirmationField = None 
+                        session.confirmationShown = False
+                        databaseSession.commit() 
+
+
                 # iterate through the potential fields that the user wants to edit 
                 for field, keywords in languageFieldMap.items(): 
                     # if the userInput matches a field to edit 
@@ -207,7 +309,13 @@ def additionScenario(userId, userInput, databaseSession):
                         databaseSession.commit()
 
                         prompt = generatePrompt(field)
-                        return prompt
+                        return prompt if field != 'start' else populateAvailableTimesMonth + '\n' + prompt
+                    
+                    #* Fill in this conditional for being finished with confirmation
+                    # elif userInput in ['done', 'Done', 'finished', 'finish']: 
+                
+                    #* Create a new conditional so that can catch 'bot does not understand and retry until it hits one of the above conditionals.'
+
         
 
 
