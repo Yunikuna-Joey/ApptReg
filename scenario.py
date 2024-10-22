@@ -4,7 +4,7 @@ from dateutil import parser
 
 # Helper file imports
 from model import initializeChatModel, initializeClassificationModel
-from helper import displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
+from helper import convertDateTime, displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
 from eventService import checkWeekendCondition, checkDayState, checkWorkHour, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
@@ -241,7 +241,7 @@ def additionScenario(userId, userInput, databaseSession):
                             session.currentConfirmationField = None 
                             session.confirmationShown = False
                             databaseSession.commit()
-                        #* Same objective as the if conditional 
+                        #* Same objective as the if conditional [may need to change this to only overwrite duration]
                         else: 
                             session.serviceDuration = serviceToHours(userInput)
                             session.eventObject[confirmationField] = userInput
@@ -253,7 +253,17 @@ def additionScenario(userId, userInput, databaseSession):
                         if session.serviceDuration > prevDurationTime:
                             # check if the current startTime is avaiable for the new duration 
                             if isTimeAvailable(eventObject['start'], session.serviceDuration) == False: 
-                                pass
+                                errorMessage = f"Your new cleaning service could not be performed at your initial appointment time {convertDateTime(session.eventObject['start'], session.serviceDuration)}"
+                                errorMessage2 = f"Please choose another time that works best for you as well as make sure there is enough time available to finish in ({session.serviceDuration} hours.)"
+
+                                scheduledList = populateAvailableTimesMonth()
+                                
+                                #* The plan might be to just overwrite the user session's current confirmation field to be the field that handles checking for a valid time
+                                # session.currentConfirmationField = ['start']
+                                # databaseSession.commit()
+                                return errorMessage + "\n" + errorMessage2 + "\n" + scheduledList
+                            
+
 
                     elif confirmationField == 'start': 
                         try: 
@@ -315,7 +325,9 @@ def additionScenario(userId, userInput, databaseSession):
                     # elif userInput in ['done', 'Done', 'finished', 'finish']: 
                 
                     #* Create a new conditional so that can catch 'bot does not understand and retry until it hits one of the above conditionals.'
-
+                    else: 
+                        errorMessage = "I did not understand that, please let me know which category you would like to change or reply with 'Done' to continue with scheduling your appointment"
+                        return errorMessage
         
 
 
