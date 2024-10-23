@@ -55,7 +55,7 @@ class UserSession(Base):
     descriptionObject = Column(String, nullable=True)
     serviceDuration = Column(Integer, nullable=True)
     currentField = Column(String, nullable=True)
-    savedStartTime = Column(String, nullable=True)
+    confirmationCode = Column(String, nullable=True)
     confirmationShown = Column(Boolean, nullable=True)
     currentConfirmationField = Column(String, nullable=True)
 
@@ -69,7 +69,7 @@ class UserSession(Base):
         self.descriptionObject = None
         self.serviceDuration = None
         self.currentField = None
-        self.savedStartTime = None
+        self.confirmationCode = None 
         self.confirmationShown = None
         self.currentConfirmationField = None
         self.eventObject = {
