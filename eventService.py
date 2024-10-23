@@ -1070,7 +1070,7 @@ def displayEventObjectInfo(eventObject):
 
     eventObjectInfo=f"""
 Name: {eventObject['summary']}
-Vehicle: {descriptionList[1]}
+Vehicle: {descriptionList[3]}
 Time: {convertDateTime(dtObjectStart, durationHour)}
     """
     return eventObjectInfo

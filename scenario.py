@@ -7,7 +7,7 @@ from datetime import datetime
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
 from helper import convertDateTime, displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -373,69 +373,63 @@ def additionScenario(userId, userInput, databaseSession):
                         errorMessage = "I did not understand that, please let me know which category you would like to change or reply with 'Done' to continue with scheduling your appointment"
                         return errorMessage, False
 
-    # delete scenario [session management vars: intentObject, confimationCode, confirmationShown]
+    # delete scenario  newImplementaiton: [intentObject, currentField, confirmation]
     elif intentObject in ['delete']: 
-        if session.confirmationCode is None and session.confirmationShown is None: 
-            session.confirmationShown = True 
-            databaseSession.commit()
-            # most likely need a field for their confirmationCode [The next input should be for the confirmation code]
-            response = "Please provide your confirmation code found in the email that was sent to your inbox so I can find your appointment!"
-            return response, False 
+        if session.currentField is None: 
+            session.currentField = 'awaitConfirmationCode'
+            databaseSession.commit() 
+
+            responseMessage = "Please provide your confirmation code found in the email that was sent to your inbox so I can find your appointment!"
+            return responseMessage, False 
         
-        # if there is already a confirmation code stored in session [continue with storyline]
-        else:
-            session.confirmationShown = False
-            # store the confirmationCode and reset the confirmation shown 
-            session.confirmationCode = userInput 
-            databaseSession.commit()
+        elif session.currentField == "awaitConfirmationCode": 
+            session.confirmationCode = userInput
+            session.currentField = 'displayEventInfo'
+            databaseSession.commit() 
+
+            responseMessage = "This is the appointment I found with the confirmation code. Is this the appointment you would like to cancel?"
+            requestedEventObject = getEventObjectById(session.confirmationCode)
+            eventObjectInfo = displayEventObjectInfo(requestedEventObject)
+            return responseMessage + eventObjectInfo, False
+        
+        elif session.currentField == "displayEventInfo": 
+            if userInput.lower() in ['yes', 'correct', 'thats the one', 'yup', 'mhm']:
+                requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                # pack the message before deleting the event 
+                deleteMsgObject = createDeleteConfirmationMessage(
+                    requestedEventObject['summary'],
+                    (requestedEventObject['description'].split('\n'))[2], 
+                    (requestedEventObject['description'].split('\n'))[3], 
+                    (requestedEventObject['description'].split('\n'))[4], 
+                    datetime.fromisoformat(requestedEventObject['start']['dateTime'])
+                )
+
+                # send out the email 
+                sendEmail(deleteMsgObject, (requestedEventObject['description'].split('\n'))[2])
+                
+                # delete the event on the backend (service)
+                deleteEvent(session.confirmationCode)
+
+                # reset session variables 
+                session.intentObject = None 
+                session.currentField = None 
+                session.confirmationCode = None
+                databaseSession.commit()
+
+                responseMessage = "You have successfully cancelled your appointment. I have also sent out an email about the appointment cancellation. Please feel free to book with us when you're ready!"
+                return responseMessage, False
             
-            if session.confirmationShown is None: 
-                session.confirmationShown = True 
-                # return the appointment details that were found 
-                responseMessage = "This is the appointment I found with the confirmation code, Is this the appointment you would like to cancel?"
-                eventObject = getEventObjectById(session.confirmationCode)
-                return responseMessage + eventObject, False
-        
+            # the event that the user replies with no 
             else: 
-                if userInput.lower() in ['yes', 'correct', 'thats the one', 'yup', 'mhm']:
-                    # This event object is the one retrieved 
-                    requestedEventObject = getEventObjectById(session.confirmationCode)
+                session.intentObject = None 
+                session.confirmationCode = None 
+                session.currentField = None 
+                databaseSession.commit()
 
-                    # delete the event from the calendar
-                    deleteEvent(session.confirmationCode)
-                    
-                    # craft the delete email message 
-                    deleteMsgObject = createDeleteConfirmationMessage(
-                        eventObject['summary'],
-                        (eventObject['description'].split('\n'))[2], 
-                        (eventObject['description'].split('\n'))[3], 
-                        (eventObject['description'].split('\n'))[4], 
-                        datetime.fromisoformat(requestedEventObject['start']['dateTime'])
-                    )
-
-                    # send the delete confimration email
-                    sendEmail(deleteMsgObject, (requestedEventObject['description'].split('\n'))[2])
-
-                    # after sending out the email, we will reset values used in this storyline
-                    session.intentObject = None
-                    session.confirmationShown = None 
-                    databaseSession.commit()
-                    
-                    # return a message for the bot to send back when it goes through 
-                    confirmationMessage = "You have successfully cancelled your appointment. I have also sent out an email about the appointment cancellation. Please feel free to book with us when you're ready!"
-                    return confirmationMessage, False
-
-                # if the response is no
-                else: 
-                    # reset the intentObject
-                    if session.intentObject or session.confirmationShown: 
-                        session.intentObject = None 
-                        session.confirmationShown = None 
-                        databaseSession.commit()
-
-                    # respond normally and reset intent back to blank and restart delete storyline if necessary
-                    response = chatModel.generate_content(userInput).text
-                    return response, False
+                # respond normally and reset intent back to blank and restart delete storyline if necessary
+                response = chatModel.generate_content(userInput).text
+                return response, False
 
     else: 
         # reset if something was made
