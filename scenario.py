@@ -63,7 +63,7 @@ def additionScenario(userId, userInput, databaseSession):
                 # Error check with function here 
                 if phoneNumberChecker(userInput) == False:
                     errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-456"
-                    return errorMessage
+                    return errorMessage, False 
                 
                 # Commit changes into the database 
                 session.eventObject[currentField] = userInput
@@ -74,7 +74,7 @@ def additionScenario(userId, userInput, databaseSession):
                 # Error checking with function
                 if emailChecker(userInput) == False: 
                     errorMessage = "I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails."
-                    return errorMessage
+                    return errorMessage, False
 
                 # Commit changes into the database
                 session.eventObject[currentField] = userInput
@@ -85,7 +85,7 @@ def additionScenario(userId, userInput, databaseSession):
                 # Error checking 
                 if carDescriptionchecker(userInput) == False: 
                     errorMessage = "I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)"
-                    return errorMessage
+                    return errorMessage, False
 
                 # Commit changes into the database 
                 session.eventObject[currentField] = userInput 
@@ -96,7 +96,7 @@ def additionScenario(userId, userInput, databaseSession):
                 # Error checking 
                 if serviceTypeChecker(userInput) == False: 
                     errorMessage = "That is not a service we offer. Please choose a service we offer: interior, exterior, or both."
-                    return errorMessage
+                    return errorMessage, False
 
                 # Modify the user input if they said both
                 if 'both' in userInput or 'Both' in userInput: 
@@ -121,13 +121,13 @@ def additionScenario(userId, userInput, databaseSession):
                     if checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False:
                         if checkWeekendCondition(startTime) == False: 
                             errorMessage = "Please choose a weekend as we are not taking appointments on weekdays."
-                            return errorMessage
+                            return errorMessage, False
                         elif checkDayState(startTime) == False: 
                             errorMessage = "Please choose a valid day not in the past."
-                            return errorMessage
+                            return errorMessage, False
                         elif checkWorkHour(startTime) == False: 
                             errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
-                            return errorMessage
+                            return errorMessage, False
 
                     # Gather all the events for the client-requested date
                     scheduledEventList = populateEventsForDay(startTime)
@@ -140,7 +140,7 @@ def additionScenario(userId, userInput, databaseSession):
                         errorMessage = "Your requested time is not available. Here are the available times"
                         availableTimeList = populateAvailableTimesMonth()
 
-                        return errorMessage + "\n" + availableTimeList
+                        return errorMessage + "\n" + availableTimeList,  False
                     
                     # Push changes into database
                     session.eventObject[currentField] = startTime
@@ -149,7 +149,7 @@ def additionScenario(userId, userInput, databaseSession):
                 
                 except(ValueError, TypeError): 
                     errorMessage = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
-                    return errorMessage
+                    return errorMessage, False
 
             else: 
                 if 'facility' in userInput and currentField == 'location': 
@@ -168,7 +168,7 @@ def additionScenario(userId, userInput, databaseSession):
 
                 # generate a prompt for the missing field 
                 prompt = generatePrompt(field)
-                return prompt
+                return prompt, False
         
         #*****************************Confirmation Section**************************************************
         # only create this map when all of the fields of the eventObject are not None [filled out]
@@ -184,7 +184,7 @@ def additionScenario(userId, userInput, databaseSession):
                 session.confirmationShown = True 
 
                 # This returns the message with all of the details parsed from the user and the prompt for the user to make a decision
-                return confirmationPrompt + "\n" + displayConfirmationMessage(session.eventObject, session.serviceDuration)
+                return confirmationPrompt + "\n" + displayConfirmationMessage(session.eventObject, session.serviceDuration), False
             
             # otherwise proceed with determining which field to edit and continue with story adding logic 
             else: 
@@ -203,7 +203,7 @@ def additionScenario(userId, userInput, databaseSession):
                     if confirmationField == 'number': 
                         if phoneNumberChecker(userInput) == False: 
                             errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567"
-                            return errorMessage 
+                            return errorMessage, False
                         
                         session.eventObject[confirmationField] = userInput
                         session.currentConfirmationField = None
@@ -213,7 +213,7 @@ def additionScenario(userId, userInput, databaseSession):
                     elif confirmationField == 'email': 
                         if emailChecker(userInput) == False: 
                             errorMessage = "I'm sorry, I didn't understand the email you entered. Please enter a valid email address that can receive emails."
-                            return errorMessage
+                            return errorMessage, False
                         
                         session.eventObject[confirmationField] = userInput
                         session.currentConfirmationField = None 
@@ -223,7 +223,7 @@ def additionScenario(userId, userInput, databaseSession):
                     elif confirmationField == 'carModel': 
                         if carDescriptionchecker(userInput) == False: 
                             errorMessage = "I apologize, I didn't understand the car year/make/model that you provided. Please provide your car in the format year/make/model. (Ex: 2015 Honda Civic)"
-                            return errorMessage
+                            return errorMessage, False
                     
                         session.eventObject[confirmationField] = userInput
                         session.currentConfirmationField = None 
@@ -262,7 +262,7 @@ def additionScenario(userId, userInput, databaseSession):
                                 #* The plan might be to just overwrite the user session's current confirmation field to be the field that handles checking for a valid time
                                 session.currentConfirmationField = ['start']
                                 databaseSession.commit()
-                                return errorMessage + "\n" + errorMessage2 + "\n" + scheduledList
+                                return errorMessage + "\n" + errorMessage2 + "\n" + scheduledList, False
                         
                         else: 
                             # if we do not trigger the above conditional to pursue time story-line then we need a way to get back to reviewing the confirmation eventObject details 
@@ -276,13 +276,13 @@ def additionScenario(userId, userInput, databaseSession):
                             if checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False:
                                 if checkWeekendCondition(startTime) == False: 
                                     errorMessage = "Please choose a weekend as we are not taking appointments on weekdays."
-                                    return errorMessage
+                                    return errorMessage, False
                                 elif checkDayState(startTime) == False: 
                                     errorMessage = "Please choose a valid day not in the past."
-                                    return errorMessage
+                                    return errorMessage, False
                                 elif checkWorkHour(startTime) == False: 
                                     errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
-                                    return errorMessage
+                                    return errorMessage, False
                             
                             scheduledEventList = populateEventsForDay(startTime)
 
@@ -292,7 +292,7 @@ def additionScenario(userId, userInput, databaseSession):
                                 errorMessage = "Your requested time is not available. Here are the available times"
                                 availableTimeList = populateAvailableTimesMonth()
 
-                                return errorMessage + "\n" + availableTimeList
+                                return errorMessage + "\n" + availableTimeList, False
                             
                             # push changes into the database 
                             session.eventObject[confirmationField] = startTime 
@@ -302,7 +302,7 @@ def additionScenario(userId, userInput, databaseSession):
                         
                         except(ValueError, TypeError):
                             errorMessage = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
-                            return errorMessage
+                            return errorMessage, False
                     
                     else: 
                         if 'facility' in userInput and confirmationField == 'location': 
@@ -324,7 +324,7 @@ def additionScenario(userId, userInput, databaseSession):
 
                         prompt = generatePrompt(field)
                         #* There might be a clash of double available times with this and the confirmation 'start' case [test accordingly]
-                        return prompt if field != 'start' else populateAvailableTimesMonth + '\n' + prompt
+                        return prompt, False if field != 'start' else populateAvailableTimesMonth + '\n' + prompt, False
                     
                     #* Fill in this conditional for being finished with confirmation
                     elif userInput in ['done', 'Done', 'finished', 'finish']: 
@@ -365,12 +365,12 @@ def additionScenario(userId, userInput, databaseSession):
                         # resetSessionObjectValues(session.eventObject)
 
                         successMessage = f"You have successfully booked your appointment for {convertDateTime(session.eventObject['start'], session.serviceDuration)}!"
-                        return successMessage
+                        return successMessage, True
 
                     #* Create a new conditional so that can catch 'bot does not understand and retry until it hits one of the above conditionals.'
                     else: 
                         errorMessage = "I did not understand that, please let me know which category you would like to change or reply with 'Done' to continue with scheduling your appointment"
-                        return errorMessage
+                        return errorMessage, False
         
 
 
@@ -380,4 +380,4 @@ def additionScenario(userId, userInput, databaseSession):
             session.intentObject = None 
             databaseSession.commit()
         response = chatModel.generate_content(userInput).text
-        return response
+        return response, False

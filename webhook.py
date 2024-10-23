@@ -8,7 +8,7 @@ from scenario import additionScenario
 # database imports
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from sessionManager import initializeDatabase
+from sessionManager import initializeDatabase, UserSession
 
 import requests
 
@@ -104,9 +104,26 @@ def processPostRequest():
             senderId = extractSenderIdFromPayload(payload)
 
             # implement the chatbot logic 
-            responseMessageContent = additionScenario(senderId, messageContent, dbSession)
+            responseMessageContent, resetSessionStatus = additionScenario(senderId, messageContent, dbSession)
+
+            # determine whether to reset the session variables 
+            if resetSessionStatus: 
+                @after_this_request
+                def resetSession(response): 
+                    session = dbSession.query(UserSession).filter_by(userId=senderId).first()
+                    if session: 
+                        session.intentObject = None 
+                        session.serviceDuration = None 
+                        session.confirmationShown = None 
+                        for key, value in session.eventObject.items(): 
+                            if value is not None: 
+                                session.eventObject[key] = None 
+                        
+                        dbSession.commit()
+                        dbSession.close()
+                    return response
             
-            # debugging variables
+            # debugging variables [This also sends the message out to users] 
             status, requestResponse = sendMsg(senderId, responseMessageContent)
 
             # print(f"Send message status: {status}, response: {requestResponse}")
