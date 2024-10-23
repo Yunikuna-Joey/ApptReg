@@ -431,6 +431,10 @@ def additionScenario(userId, userInput, databaseSession):
                 response = chatModel.generate_content(userInput).text
                 return response, False
 
+    # edit scenario [intentObject]
+    elif intentObject in ['modify']: 
+        # grab the confirmation code from the client 
+        pass
     else: 
         # reset if something was made
         if intentObject:
