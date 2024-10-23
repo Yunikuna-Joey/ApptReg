@@ -7,7 +7,7 @@ from datetime import datetime
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
 from helper import convertDateTime, displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editNumber, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -390,7 +390,7 @@ def additionScenario(userId, userInput, databaseSession):
             responseMessage = "This is the appointment I found with the confirmation code. Is this the appointment you would like to cancel?"
             requestedEventObject = getEventObjectById(session.confirmationCode)
             eventObjectInfo = displayEventObjectInfo(requestedEventObject)
-            return responseMessage + eventObjectInfo, False
+            return responseMessage + "\n" + eventObjectInfo, False
         
         elif session.currentField == "displayEventInfo": 
             if userInput.lower() in ['yes', 'correct', 'thats the one', 'yup', 'mhm']:
@@ -431,10 +431,73 @@ def additionScenario(userId, userInput, databaseSession):
                 response = chatModel.generate_content(userInput).text
                 return response, False
 
-    # edit scenario [intentObject]
+    # edit scenario [intentObject, currentField, currentConfirmationField]
     elif intentObject in ['modify']: 
-        # grab the confirmation code from the client 
-        pass
+        # this will prompt the user to enter their confirmation code [stage1]
+        if session.currentField is None: 
+            session.currentField = 'awaitConfirmationCode'
+            databaseSession.commit()
+
+            responseMessage = "Please provide your confirmation code found in the email that was sent to your inbox so I can find your appointment!"
+            return responseMessage, False 
+        
+        # this will display the appointment for confirmation of updating [stage2]
+        elif session.currentField == "awaitConfirmationCode": 
+            session.confirmationCode = userInput
+            session.currentField = 'displayEventInfo'
+            databaseSession.commit()
+            
+            responseMessage = "This is the appointment I found with the confirmation code. What would you like to change?"
+            requestedEventObject = getEventObjectById(session.confirmationCode)
+            eventObjectInfo = displayEventObjectInfo(requestedEventObject)
+            return responseMessage + "\n" + eventObjectInfo, False  
+        
+        # This will ask for what portion of the appointment that they want to change [stage3]
+        elif session.currentField == "displayEventInfo": 
+            session.currentField = 'changes'
+            databaseSession.commit()
+
+            responseMessage = "What do you want to change?"
+            return responseMessage, False
+        
+        # This will process the user input 
+        elif session.currentField == "changes": 
+            
+            languageFieldMap = { 
+                'name': ['name', 'change name', 'update name'],
+                'number': ['phone', 'number', 'update phone', 'change number'],
+                'email': ['email', 'update email', 'change email'],
+                'carModel': ['car', 'update car', 'change car', 'car model'],
+                'location': ['location', 'change location', 'update location'],
+                'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
+                'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
+            }
+
+            if session.currentConfirmationField: 
+                if session.currentConfirmationField == 'number': 
+                    if phoneNumberChecker(userInput) == False: 
+                        errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567"
+                        return errorMessage, False
+                    
+                    # perform the backend change
+                    editNumber(session.confirmationCode, userInput)
+
+                    # need to update the session management variables here 
+                    session.currentConfirmationField = None 
+                    session.currentField = "displayEventInfo"
+                    databaseSession.commit()
+                    
+
+            for field, keywords in languageFieldMap.items(): 
+                if any(keyword in userInput for keyword in keywords):
+                    # if we find a match to a valid field that the user wants to change
+                    session.currentConfirmationField = field
+                    databaseSession.commit()
+
+                    prompt = generatePrompt(field)
+                    return prompt, False 
+
+
     else: 
         # reset if something was made
         if intentObject:
