@@ -3,9 +3,10 @@ from zoneinfo import ZoneInfo
 from dateutil import parser
 
 # Helper file imports
+from emailService import createConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
-from helper import convertDateTime, displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import checkWeekendCondition, checkDayState, checkWorkHour, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from helper import convertDateTime, displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, resetSessionObjectValues, serviceToHours, serviceTypeChecker, getInstagramUsername
+from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -206,7 +207,7 @@ def additionScenario(userId, userInput, databaseSession):
                         
                         session.eventObject[confirmationField] = userInput
                         session.currentConfirmationField = None
-                        session.confirmationShown = False
+                        session.confirmationShown = None
                         databaseSession.commit()
                     
                     elif confirmationField == 'email': 
@@ -216,7 +217,7 @@ def additionScenario(userId, userInput, databaseSession):
                         
                         session.eventObject[confirmationField] = userInput
                         session.currentConfirmationField = None 
-                        session.confirmationShown = False
+                        session.confirmationShown = None
                         databaseSession.commit()
 
                     elif confirmationField == 'carModel': 
@@ -226,7 +227,7 @@ def additionScenario(userId, userInput, databaseSession):
                     
                         session.eventObject[confirmationField] = userInput
                         session.currentConfirmationField = None 
-                        session.confirmationShown = False
+                        session.confirmationShown = None
                         databaseSession.commit()
                     
                     elif confirmationField == 'description': 
@@ -239,14 +240,14 @@ def additionScenario(userId, userInput, databaseSession):
                             session.serviceDuration = serviceToHours(userInput)
                             session.eventObject[confirmationField] = userInput
                             session.currentConfirmationField = None 
-                            session.confirmationShown = False
+                            # session.confirmationShown = None
                             databaseSession.commit()
-                        #* Same objective as the if conditional [may need to change this to only overwrite duration]
+                        #* Same objective as the if conditional
                         else: 
                             session.serviceDuration = serviceToHours(userInput)
                             session.eventObject[confirmationField] = userInput
                             session.currentConfirmationField = None 
-                            session.confirmationShown = False
+                            # session.confirmationShown = None
                             databaseSession.commit()
                         
                         #* Fill in Later.
@@ -259,12 +260,15 @@ def additionScenario(userId, userInput, databaseSession):
                                 scheduledList = populateAvailableTimesMonth()
                                 
                                 #* The plan might be to just overwrite the user session's current confirmation field to be the field that handles checking for a valid time
-                                # session.currentConfirmationField = ['start']
-                                # databaseSession.commit()
+                                session.currentConfirmationField = ['start']
+                                databaseSession.commit()
                                 return errorMessage + "\n" + errorMessage2 + "\n" + scheduledList
+                        
+                        else: 
+                            # if we do not trigger the above conditional to pursue time story-line then we need a way to get back to reviewing the confirmation eventObject details 
+                            session.confirmationShown = None
+                            databaseSession.commit()
                             
-
-
                     elif confirmationField == 'start': 
                         try: 
                             startTime = parser.parse(userInput)
@@ -319,11 +323,50 @@ def additionScenario(userId, userInput, databaseSession):
                         databaseSession.commit()
 
                         prompt = generatePrompt(field)
+                        #* There might be a clash of double available times with this and the confirmation 'start' case [test accordingly]
                         return prompt if field != 'start' else populateAvailableTimesMonth + '\n' + prompt
                     
                     #* Fill in this conditional for being finished with confirmation
-                    # elif userInput in ['done', 'Done', 'finished', 'finish']: 
-                
+                    elif userInput in ['done', 'Done', 'finished', 'finish']: 
+                        # This will combine the username, number, email, carModel, and service description into one object 
+                        descriptionObject = session.instagramUsername + "\n" + session.eventObject['number'] + "\n" + session.eventObject['email'] + "\n" + session.eventObject['carModel'] + "\n" + session.eventObject['description'] 
+                        
+                        # pack the event object together 
+                        confirmationObject = createEventObject( 
+                            session.eventObject['name'], 
+                            session.eventObject['location'], 
+                            descriptionObject, 
+                            session.eventObject['start'], 
+                            session.serviceDuration
+                        )
+
+                        # performs service of adding the event into the Calendar 
+                        confirmationEvent = addEvent(confirmationObject)
+                        uniqueEventId = confirmationEvent.get('id')
+
+                        # store the message to send in an email 
+                        confirmationMsg = createConfirmationMessage(
+                            uniqueEventId, 
+                            session.eventObject['name'], 
+                            session.eventObject['email'], 
+                            session.eventObject['number'],
+                            session.eventObject['carModel'], 
+                            session.eventObject['location'], 
+                            session.eventObject['description'], 
+                            session.eventObject['start'], 
+                            session.serviceDuration
+                        )
+
+                        # performs the back-end service to send out the confirmation email with their confirmation code 
+                        sendEmail(confirmationMsg, session.eventObject['email'])
+
+                        # resetSessionObjectValues(session.intentObject)
+                        # resetSessionObjectValues(session.descriptionObject)
+                        # resetSessionObjectValues(session.eventObject)
+
+                        successMessage = f"You have successfully booked your appointment for {convertDateTime(session.eventObject['start'], session.serviceDuration)}!"
+                        return successMessage
+
                     #* Create a new conditional so that can catch 'bot does not understand and retry until it hits one of the above conditionals.'
                     else: 
                         errorMessage = "I did not understand that, please let me know which category you would like to change or reply with 'Done' to continue with scheduling your appointment"

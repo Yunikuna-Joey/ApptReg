@@ -2,8 +2,45 @@
 from sqlalchemy import Column, Integer, String, JSON, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.types import TypeDecorator
+
+import json 
+import datetime
 
 Base = declarative_base()
+
+class JSONEncodeDict(TypeDecorator): 
+    impl = JSON 
+
+    # serializing the start time from datetime object into isoformat 
+    def process_bind_param(self, value, dialect):
+        if value is None: 
+            return None 
+        
+        def serialize(object): 
+            if isinstance(object, datetime.datetime):
+                return object.isoformat()
+
+            return object 
+    
+        return json.dumps(value, default=serialize)
+    
+    def process_result_value(self, value, dialect):
+        if value is None: 
+            return None 
+        
+        # convert string back to datetime objects
+        def datetimeParse(dictObject): 
+            for key, val in dictObject.items(): 
+                try: 
+                    dictObject[key] = datetime.datetime.fromisoformat(val)
+                
+                except (ValueError, TypeError): 
+                    continue
+            
+            return dictObject
+        
+        return json.loads(value, object_hook=datetimeParse)
 
 # Mock data model 
 class UserSession(Base): 
@@ -22,7 +59,7 @@ class UserSession(Base):
     confirmationShown = Column(Boolean, nullable=True)
     currentConfirmationField = Column(String, nullable=True)
 
-    eventObject = Column(MutableDict.as_mutable(JSON))
+    eventObject = Column(MutableDict.as_mutable(JSONEncodeDict))
 
     # Constructor
     def __init__(self, userId, instagramUsername): 

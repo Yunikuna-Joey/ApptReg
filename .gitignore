@@ -6,3 +6,4 @@ chatbot
 privacy.py
 templates
 *.db
+*.db-journal

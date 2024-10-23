@@ -39,6 +39,14 @@ def resetObjectValues(dataObject):
     elif isinstance(dataObject, str): 
         dataObject = ""
 
+def resetSessionObjectValues(dataObject): 
+    if isinstance(dataObject, dict): 
+        for key in dataObject: 
+            dataObject[key] = None 
+
+    elif isinstance(dataObject, str): 
+        dataObject = None 
+
 def emailChecker(email): 
     # expression to determine userInput follows a valid email format
     emailRegex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
