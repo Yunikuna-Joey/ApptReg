@@ -4,9 +4,9 @@ from dateutil import parser
 from datetime import datetime
 
 # Helper file imports
-from emailService import createConfirmationMessage, createDeleteConfirmationMessage, sendEmail
+from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
-from helper import convertDateTime, displayConfirmationMessage, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
+from helper import convertDateTime, displayConfirmationMessage, displayConfirmationObject, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
 from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editNumber, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
@@ -433,6 +433,11 @@ def additionScenario(userId, userInput, databaseSession):
 
     # edit scenario [intentObject, currentField, currentConfirmationField]
     elif intentObject in ['modify']: 
+        # need a conditional to check the userInput is == done and then reset values in the data entry
+        if userInput.strip().lower() in ['done, finished, finish, finalize']: 
+            # reset session management
+            pass 
+
         # this will prompt the user to enter their confirmation code [stage1]
         if session.currentField is None: 
             session.currentField = 'awaitConfirmationCode'
@@ -444,21 +449,15 @@ def additionScenario(userId, userInput, databaseSession):
         # this will display the appointment for confirmation of updating [stage2]
         elif session.currentField == "awaitConfirmationCode": 
             session.confirmationCode = userInput
-            session.currentField = 'displayEventInfo'
+            # session.currentField = 'displayEventInfo'
+            session.currentField = 'changes'
             databaseSession.commit()
             
             responseMessage = "This is the appointment I found with the confirmation code. What would you like to change?"
             requestedEventObject = getEventObjectById(session.confirmationCode)
-            eventObjectInfo = displayEventObjectInfo(requestedEventObject)
+            # eventObjectInfo = displayEventObjectInfo(requestedEventObject)
+            eventObjectInfo = displayConfirmationObject(requestedEventObject, serviceToHours(requestedEventObject['description'].split('\n')[-1]))
             return responseMessage + "\n" + eventObjectInfo, False  
-        
-        # This will ask for what portion of the appointment that they want to change [stage3]
-        elif session.currentField == "displayEventInfo": 
-            session.currentField = 'changes'
-            databaseSession.commit()
-
-            responseMessage = "What do you want to change?"
-            return responseMessage, False
         
         # This will process the user input 
         elif session.currentField == "changes": 
@@ -479,13 +478,33 @@ def additionScenario(userId, userInput, databaseSession):
                         errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567"
                         return errorMessage, False
                     
+                    requestedEventObject = getEventObjectById(session.confirmationCode)
+                    
+                    editMessageObject = createEditConfirmationMessage(
+                        session.confirmationCode, 
+                        requestedEventObject['summary'], 
+                        requestedEventObject['description'].split('\n')[2],
+                        requestedEventObject['description'].split('\n')[1],
+                        requestedEventObject['description'].split('\n')[3],
+                        requestedEventObject['location'],
+                        requestedEventObject['description'].split('\n')[4],
+                        datetime.fromisoformat(requestedEventObject['start']['dateTime']),
+                        serviceToHours(requestedEventObject['description'].split('\n')[4])
+                    )
+
+                    # send out the email about the change
+                    sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+
                     # perform the backend change
                     editNumber(session.confirmationCode, userInput)
 
                     # need to update the session management variables here 
-                    session.currentConfirmationField = None 
-                    session.currentField = "displayEventInfo"
+                    session.currentConfirmationField = None
+                    session.currentField = "changes"
                     databaseSession.commit()
+
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    return response, False 
                     
 
             for field, keywords in languageFieldMap.items(): 

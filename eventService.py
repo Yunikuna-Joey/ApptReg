@@ -851,7 +851,7 @@ def editNumber(eventId, number):
         splitList = event['description'].split('\n')
 
         # it will always follow the same pattern so we can go straight to the index 
-        splitList[2] = number
+        splitList[1] = number
 
         finalDescription = '\n'.join(splitList)            # put the list back together 
 

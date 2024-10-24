@@ -123,6 +123,22 @@ Time: {eventObject['start'].strftime('%I:%M %p')} - {(eventObject['start'] + tim
     # print(confirmationMsg)
     return confirmationMsg
 
+# renders the information from a Google Event object [tested and works]
+def displayConfirmationObject(googleObject, duration):
+    confirmationMessage = (
+        f"Name: {googleObject['summary']}\n"
+        f"Phone: {googleObject['description'].splitlines()[1]}\n"
+        f"Email: {googleObject['description'].splitlines()[2]}\n"
+        f"Car: {googleObject['description'].splitlines()[3]}\n"
+        f"Location: {googleObject['location']}\n"
+        f"Cleaning: {googleObject['description'].splitlines()[4]}\n"
+        f"Date: {datetime.fromisoformat(googleObject['start']['dateTime']).strftime('%B %d, %Y')}\n"
+        f"Time: {datetime.fromisoformat(googleObject['start']['dateTime']).strftime('%I:%M %p')} - "
+        f"{(datetime.fromisoformat(googleObject['start']['dateTime']) + timedelta(hours=duration)).strftime('%I:%M %p')}"
+    )
+    
+    return confirmationMessage
+
 def serviceToHours(serviceType): 
     """ 
     This will take in a string (service) then retrieve the hours associated with that specific service (string)
