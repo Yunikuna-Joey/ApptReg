@@ -864,6 +864,39 @@ def editNumber(eventId, number):
     except Exception as e: 
         print(f"[editNumber]: There was an issue changing the number associated with this appointment {e}")
 
+def editSummary(eventId, nameChange): 
+    """
+    Changes the summary field of a eventObject pulled from a Google Calendar 
+    """
+    try: 
+        calendarService = initializeCalendarService()
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
+
+        # this will update the Summary for the event from Google Calendar
+        event['summary'] = nameChange
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+        print(f"[editSummary]: Successfully changed the summary for the appointment {updatedEventObject['htmlLink']}")
+
+    except Exception as e: 
+        print(f"[editSummary]: There was an issue changing the summary for this appointment {e}")
+
+def editLocation(eventId, locationChange): 
+    """
+    Changes the location field of an eventObject pulled from a Google Calendar 
+    """
+    try: 
+        calendarService = initializeCalendarService()
+        event = calendarService.events().get(calendarId=TARGET_CALENDAR_ID, eventId=eventId).execute()
+
+        event['location'] = locationChange 
+
+        updatedEventObject = calendarService.events().update(calendarId=TARGET_CALENDAR_ID, eventId=eventId, body=event).execute()
+        print(f"[editLocation]: Successfully changed the location for the appointment {updatedEventObject['htmlLink']}")
+
+    except Exception as e: 
+        print(f"[editLocation]: There was an issue changing the location for this appointment {e}")
+
 # allows for the user to change their email address on record
 def editEmail(eventId, emailAddress): 
     try: 

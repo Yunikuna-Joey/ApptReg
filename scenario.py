@@ -6,8 +6,8 @@ from datetime import datetime
 # Helper file imports
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
-from helper import convertDateTime, displayConfirmationMessage, displayConfirmationObject, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from helper import convertDateTime, displayConfirmationMessage, displayConfirmationObject, emailChecker, generatePrompt, locationChecker, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
+from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editLocation, editNumber, editServiceType, editSummary, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -440,6 +440,8 @@ def additionScenario(userId, userInput, databaseSession):
             session.currentConfirmationField = None 
             session.confirmationCode = None 
             session.intentObject = None 
+            #* come back to this to determine if this is working as intended 
+            session.descriptionObject = None 
             responseMessage = "Please feel free to speak with me again if you have anything else you would like to change about your appointment!"
 
             return responseMessage, False 
@@ -469,7 +471,7 @@ def additionScenario(userId, userInput, databaseSession):
         elif session.currentField == "changes": 
             
             languageFieldMap = { 
-                'name': ['name', 'change name', 'update name'],
+                'summary': ['name', 'change name', 'update name'],
                 'number': ['phone', 'number', 'update phone', 'change number'],
                 'email': ['email', 'update email', 'change email'],
                 'carModel': ['car', 'update car', 'change car', 'car model'],
@@ -508,7 +510,7 @@ def additionScenario(userId, userInput, databaseSession):
 
                     # need to update the session management variables here 
                     session.currentConfirmationField = None
-                    session.currentField = "changes"
+                    # session.currentField = "changes"
                     databaseSession.commit()
 
                     response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
@@ -539,7 +541,7 @@ def additionScenario(userId, userInput, databaseSession):
                     sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
 
                     session.currentConfirmationField = None 
-                    session.currentField = "changes"
+                    # session.currentField = "changes"
                     databaseSession.commit()
 
                     response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
@@ -569,7 +571,7 @@ def additionScenario(userId, userInput, databaseSession):
                     sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
 
                     session.currentConfirmationField = None 
-                    session.currentField = "changes"
+                    # session.currentField = "changes"
                     databaseSession.commit()
 
                     response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
@@ -580,17 +582,22 @@ def additionScenario(userId, userInput, databaseSession):
                         response = "That is not a service we offer. Please choose a service we offer: interior, exterior, or both."
                         return response, False 
                     
+                    # request the eventObject to obtain the previous service duration 
                     requestedEventObject = getEventObjectById(session.confirmationCode)
 
                     # this saves the current duration time of the service type before modifying
                     session.serviceDuration = serviceToHours(requestedEventObject['description'].split('\n')[4])
+                    databaseSession.commit()
 
+                    # process the input (the change the client wants to perform)
                     if 'both' in userInput.lower(): 
                         userInput = "Exterior & Interior"
                         newServiceDuration = serviceToHours(userInput)
                     
                     else: 
                         newServiceDuration = serviceToHours(userInput)
+                    
+                    print(f"This is newServiceDuration {newServiceDuration}")
                     
                     # if we are changing from single service to double service 
                     if newServiceDuration > session.serviceDuration: 
@@ -599,13 +606,32 @@ def additionScenario(userId, userInput, databaseSession):
                             responseMessage = f"Your new cleaning service could not be performed at your initial appointment time {convertDateTime(datetime.fromisoformat(eventObject['start']['dateTime']), newServiceDuration)}\nPlease choose another time that works best for you as well as make sure there is enough time available to finish ({newServiceDuration} hours.)"
                             fullList = populateAvailableTimesMonth()
 
+                            # moves the client into the start time storyline 
                             session.currentConfirmationField = 'start'
+                            # using the descriptionObject field to store the new change that the client wants to perform
+                            session.descriptionObject = userInput
+
                             databaseSession.commit()
                             return errorMessage + "\n" + errorMessage2 + "\n" + fullList, False
 
                     # otherwise proceed with changes
-                    else: 
-                        pass
+                    # both 12:00 - 2:00 ==> interior/exterior 12:00 - 1:00
+                    elif newServiceDuration < session.serviceDuration: 
+                        # [logic]: if there was sufficient time for a 2 hour service, it automatically is available for a 1 hour service
+                        editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
+                        editServiceType(session.confirmationCode, userInput)
+
+                        #* possibly need more session management fields here but continue first
+                        session.currentConfirmationField = None 
+                        databaseSession.commit()
+                    
+                    else:
+                        # this will be accounting for the change of only interior <-> exterior 
+                        editServiceType(session.confirmationCode, userInput)
+
+                        #* possibly need more session management fields here but continue first
+                        session.currentConfirmationField = None 
+                        databaseSession.commit()
                 
                 elif session.currentConfirmationField == 'start': 
                     try: 
@@ -623,31 +649,128 @@ def additionScenario(userId, userInput, databaseSession):
                                 errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
                                 return errorMessage, False
                             
-                            scheduledEventList = populateEventsForDay(startTime)
+                        scheduledEventList = populateEventsForDay(startTime)
 
-                            newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
-                            
-                            # checking if the client requested start time clashes with any of the current events in the calendar 
-                            if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
-                                errorMessage = "Your requested time is not available. Here are the available times"
-                                availableTimeList = populateAvailableTimesMonth()
+                        newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
+                        
+                        # checking if the client requested start time clashes with any of the current events in the calendar 
+                        if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
+                            errorMessage = "Your requested time is not available. Here are the available times"
+                            availableTimeList = populateAvailableTimesMonth()
 
-                                return errorMessage + "\n" + availableTimeList, False
-                            
+                            return errorMessage + "\n" + availableTimeList, False
+                        
+                        # if we are coming from the description change, after we change the time-slot 
+                        if session.descriptionObject is not None: 
+                            editServiceType(session.confirmationCode, session.descriptionObject)
+                            newEventObject = getEventObjectById(session.confirmationCode)
+                            editTimeSlot(session.confirmationCode, startTime, serviceToHours(newEventObject['description'].split('\n'))[4])
+                            # after the timeslot update
+                            newInstanceObject = getEventObjectById(session.confirmationCode)
+                            editMessageObject = createEditConfirmationMessage(
+                                session.confirmationCode, 
+                                newInstanceObject['summary'], 
+                                newInstanceObject['description'].split('\n')[2],
+                                newInstanceObject['description'].split('\n')[1],
+                                newInstanceObject['description'].split('\n')[3],
+                                newInstanceObject['location'],
+                                newInstanceObject['description'].split('\n')[4],
+                                datetime.fromisoformat(newInstanceObject['start']['dateTime']),
+                                serviceToHours(newInstanceObject['description'].split('\n')[4])
+                            )
+
+                            sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+                        
+                        else:
                             # grab the current object details from the calendar 
                             requestedEventObject = getEventObjectById(session.confirmationCode)
 
                             # when all conditions are True, push changes into the eventObject within the Google Calendar 
                             editTimeSlot(session.confirmationCode, startTime, serviceToHours(requestedEventObject['description'].split('\n'))[4])
 
+                            newObject = getEventObjectById(session.confirmationCode)
+
+                            editMessageObject = createEditConfirmationMessage(
+                                session.confirmationCode, 
+                                newObject['summary'], 
+                                newObject['description'].split('\n')[2],
+                                newObject['description'].split('\n')[1],
+                                newObject['description'].split('\n')[3],
+                                newObject['location'],
+                                newObject['description'].split('\n')[4],
+                                datetime.fromisoformat(newObject['start']['dateTime']),
+                                serviceToHours(newObject['description'].split('\n')[4])
+                            )
+
+                            sendEmail(editMessageObject, newObject['description'].split('\n')[2])
+
+
+                        #* session management here 
+                        session.currentConfirmationField = None 
+                        # session.currentField = "changes"
+                        databaseSession.commit()
+
+                        response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                        return response, False
+
                     except (ValueError, TypeError): 
                         response = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
                         return response, False 
                     
-                else: 
-                    # change for generic fields etc... 
-                    pass
+                elif session.currentConfirmationField == 'location': 
+                    if locationChecker(userInput) == False: 
+                        errorMessage = "Invalid address format. Please enter your address in this format (1234 Sesame Street Sacramento CA 95828)"
+                        return errorMessage, False
+                    
+                    editLocation(session.confirmationCode, userInput)
 
+                    requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                    editMessageObject = createEditConfirmationMessage(
+                        session.confirmationCode, 
+                        requestedEventObject['summary'], 
+                        requestedEventObject['description'].split('\n')[2],
+                        requestedEventObject['description'].split('\n')[1],
+                        requestedEventObject['description'].split('\n')[3],
+                        requestedEventObject['location'],
+                        requestedEventObject['description'].split('\n')[4],
+                        datetime.fromisoformat(requestedEventObject['start']['dateTime']),
+                        serviceToHours(requestedEventObject['description'].split('\n')[4])
+                    )
+
+                    sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+
+                    session.currentConfirmationField = None 
+                    databaseSession.commit()
+
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    return response, False
+
+                elif session.currentConfirmationField == 'summary': 
+                    editSummary(session.confirmationCode, userInput)
+
+                    requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                    editMessageObject = createEditConfirmationMessage(
+                        session.confirmationCode, 
+                        requestedEventObject['summary'], 
+                        requestedEventObject['description'].split('\n')[2],
+                        requestedEventObject['description'].split('\n')[1],
+                        requestedEventObject['description'].split('\n')[3],
+                        requestedEventObject['location'],
+                        requestedEventObject['description'].split('\n')[4],
+                        datetime.fromisoformat(requestedEventObject['start']['dateTime']),
+                        serviceToHours(requestedEventObject['description'].split('\n')[4])
+                    )
+
+                    sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+
+                    session.currentConfirmationField = None 
+                    databaseSession.commit()
+
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    return response, False
+                    
 
             for field, keywords in languageFieldMap.items(): 
                 if any(keyword in userInput for keyword in keywords):
@@ -666,3 +789,4 @@ def additionScenario(userId, userInput, databaseSession):
             databaseSession.commit()
         response = chatModel.generate_content(userInput).text
         return response, False
+    

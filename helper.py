@@ -47,6 +47,16 @@ def resetSessionObjectValues(dataObject):
     elif isinstance(dataObject, str): 
         dataObject = None 
 
+def locationChecker(address): 
+    """
+    1234 Sesame Street City State 5-digit-zipCode
+    """
+
+    # expression to determine if userInput follows a valid address format
+    locationRegex = r"^\d+\s+([A-Za-z]+(\s[A-Za-z]+)*)\s+([A-Za-z]+(\s[A-Za-z]+)*)\s+[A-Z]{2}\s+\d{5}$"
+
+    return True if re.match(locationRegex, address) else False 
+
 def emailChecker(email): 
     # expression to determine userInput follows a valid email format
     emailRegex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
