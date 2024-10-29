@@ -597,9 +597,7 @@ def additionScenario(userId, userInput, databaseSession):
                     else: 
                         newServiceDuration = serviceToHours(userInput)
                     
-                    print(f"This is newServiceDuration {newServiceDuration}")
-                    
-                    # if we are changing from single service to double service 
+                    # if we are changing from single service to double service [START OUR TESTING FROM HERE AND GO DOWN THE CONDITIONALS]
                     if newServiceDuration > session.serviceDuration: 
                         # determine if the time is available, if it is not, then we will shift the client to the start time checking
                         if isTimeAvailable(datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration) == False: 
@@ -612,7 +610,11 @@ def additionScenario(userId, userInput, databaseSession):
                             session.descriptionObject = userInput
 
                             databaseSession.commit()
-                            return errorMessage + "\n" + errorMessage2 + "\n" + fullList, False
+                            return responseMessage + fullList, False
+                        
+                        # otherwise if the time is available continue with changes
+                        else: 
+                            pass
 
                     # otherwise proceed with changes
                     # both 12:00 - 2:00 ==> interior/exterior 12:00 - 1:00
