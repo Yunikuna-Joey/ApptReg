@@ -7,7 +7,7 @@ from datetime import datetime
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
 from helper import convertDateTime, displayConfirmationMessage, displayConfirmationObject, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -606,6 +606,47 @@ def additionScenario(userId, userInput, databaseSession):
                     # otherwise proceed with changes
                     else: 
                         pass
+                
+                elif session.currentConfirmationField == 'start': 
+                    try: 
+                        startTime = parser.parse(userInput)
+
+                        # Error checking if the day is valid 
+                        if checkWeekendCondition(startTime) == False or checkDayState(startTime) == False or checkWorkHour(startTime) == False:
+                            if checkWeekendCondition(startTime) == False: 
+                                errorMessage = "Please choose a weekend as we are not taking appointments on weekdays."
+                                return errorMessage, False
+                            elif checkDayState(startTime) == False: 
+                                errorMessage = "Please choose a valid day not in the past."
+                                return errorMessage, False
+                            elif checkWorkHour(startTime) == False: 
+                                errorMessage = "Please choose a time within our working hours (8 AM - 8 PM)."
+                                return errorMessage, False
+                            
+                            scheduledEventList = populateEventsForDay(startTime)
+
+                            newStartTime = startTime.astimezone(ZoneInfo("America/Los_Angeles"))
+                            
+                            # checking if the client requested start time clashes with any of the current events in the calendar 
+                            if any(event['start']['dateTime'] == newStartTime.isoformat() for event in scheduledEventList):
+                                errorMessage = "Your requested time is not available. Here are the available times"
+                                availableTimeList = populateAvailableTimesMonth()
+
+                                return errorMessage + "\n" + availableTimeList, False
+                            
+                            # grab the current object details from the calendar 
+                            requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                            # when all conditions are True, push changes into the eventObject within the Google Calendar 
+                            editTimeSlot(session.confirmationCode, startTime, serviceToHours(requestedEventObject['description'].split('\n'))[4])
+
+                    except (ValueError, TypeError): 
+                        response = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
+                        return response, False 
+                    
+                else: 
+                    # change for generic fields etc... 
+                    pass
 
 
             for field, keywords in languageFieldMap.items(): 
