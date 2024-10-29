@@ -7,7 +7,7 @@ from datetime import datetime
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
 from helper import convertDateTime, displayConfirmationMessage, displayConfirmationObject, emailChecker, generatePrompt, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editNumber, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editNumber, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -261,7 +261,7 @@ def additionScenario(userId, userInput, databaseSession):
                                 scheduledList = populateAvailableTimesMonth()
                                 
                                 #* The plan might be to just overwrite the user session's current confirmation field to be the field that handles checking for a valid time
-                                session.currentConfirmationField = ['start']
+                                session.currentConfirmationField = 'start'
                                 databaseSession.commit()
                                 return errorMessage + "\n" + errorMessage2 + "\n" + scheduledList, False
                         
@@ -431,12 +431,18 @@ def additionScenario(userId, userInput, databaseSession):
                 response = chatModel.generate_content(userInput).text
                 return response, False
 
-    # edit scenario [intentObject, currentField, currentConfirmationField]
+    # edit scenario [intentObject, confirmationCode, currentField, currentConfirmationField]
     elif intentObject in ['modify']: 
         # need a conditional to check the userInput is == done and then reset values in the data entry
         if userInput.strip().lower() in ['done, finished, finish, finalize']: 
             # reset session management
-            pass 
+            session.currentField = None 
+            session.currentConfirmationField = None 
+            session.confirmationCode = None 
+            session.intentObject = None 
+            responseMessage = "Please feel free to speak with me again if you have anything else you would like to change about your appointment!"
+
+            return responseMessage, False 
 
         # this will prompt the user to enter their confirmation code [stage1]
         if session.currentField is None: 
@@ -478,8 +484,13 @@ def additionScenario(userId, userInput, databaseSession):
                         errorMessage = "I apologize, I didn't understand the phone number you provided. Please use the format 999-123-4567"
                         return errorMessage, False
                     
+                    # perform the backend change
+                    editNumber(session.confirmationCode, userInput)
+                    
+                    # then request the eventObject after the change
                     requestedEventObject = getEventObjectById(session.confirmationCode)
                     
+                    # then pack the new information from the newly modified event 
                     editMessageObject = createEditConfirmationMessage(
                         session.confirmationCode, 
                         requestedEventObject['summary'], 
@@ -495,9 +506,6 @@ def additionScenario(userId, userInput, databaseSession):
                     # send out the email about the change
                     sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
 
-                    # perform the backend change
-                    editNumber(session.confirmationCode, userInput)
-
                     # need to update the session management variables here 
                     session.currentConfirmationField = None
                     session.currentField = "changes"
@@ -506,6 +514,99 @@ def additionScenario(userId, userInput, databaseSession):
                     response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
                     return response, False 
                     
+                elif session.currentConfirmationField == 'email': 
+                    if emailChecker(userInput) == False: 
+                        errorMessage = "Invalid email format. Please enter a valid email address that can receive emails."
+                        return errorMessage, False 
+                    
+                    # back-end change to the message object 
+                    editEmail(session.confirmationCode, userInput)
+
+                    requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                    editMessageObject = createEditConfirmationMessage(
+                        session.confirmationCode, 
+                        requestedEventObject['summary'], 
+                        requestedEventObject['description'].split('\n')[2],
+                        requestedEventObject['description'].split('\n')[1],
+                        requestedEventObject['description'].split('\n')[3],
+                        requestedEventObject['location'],
+                        requestedEventObject['description'].split('\n')[4],
+                        datetime.fromisoformat(requestedEventObject['start']['dateTime']),
+                        serviceToHours(requestedEventObject['description'].split('\n')[4])
+                    )
+
+                    sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+
+                    session.currentConfirmationField = None 
+                    session.currentField = "changes"
+                    databaseSession.commit()
+
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    return response, False
+                    
+                elif session.currentConfirmationField == 'carModel': 
+                    if carDescriptionchecker(userInput) == False: 
+                        response = "Invalid car format. Please enter in the format 'year/make/model' (e.g., 2015 Honda Civic)."
+                        return response, False 
+                    
+                    editVehicle(session.confirmationCode, userInput)
+
+                    requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                    editMessageObject = createEditConfirmationMessage(
+                        session.confirmationCode, 
+                        requestedEventObject['summary'], 
+                        requestedEventObject['description'].split('\n')[2],
+                        requestedEventObject['description'].split('\n')[1],
+                        requestedEventObject['description'].split('\n')[3],
+                        requestedEventObject['location'],
+                        requestedEventObject['description'].split('\n')[4],
+                        datetime.fromisoformat(requestedEventObject['start']['dateTime']),
+                        serviceToHours(requestedEventObject['description'].split('\n')[4])
+                    )
+
+                    sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+
+                    session.currentConfirmationField = None 
+                    session.currentField = "changes"
+                    databaseSession.commit()
+
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    return response, False
+                    
+                elif session.currentConfirmationField == 'description': 
+                    if serviceTypeChecker(userInput) == False: 
+                        response = "That is not a service we offer. Please choose a service we offer: interior, exterior, or both."
+                        return response, False 
+                    
+                    requestedEventObject = getEventObjectById(session.confirmationCode)
+
+                    # this saves the current duration time of the service type before modifying
+                    session.serviceDuration = serviceToHours(requestedEventObject['description'].split('\n')[4])
+
+                    if 'both' in userInput.lower(): 
+                        userInput = "Exterior & Interior"
+                        newServiceDuration = serviceToHours(userInput)
+                    
+                    else: 
+                        newServiceDuration = serviceToHours(userInput)
+                    
+                    # if we are changing from single service to double service 
+                    if newServiceDuration > session.serviceDuration: 
+                        # determine if the time is available, if it is not, then we will shift the client to the start time checking
+                        if isTimeAvailable(datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration) == False: 
+                            responseMessage = f"Your new cleaning service could not be performed at your initial appointment time {convertDateTime(datetime.fromisoformat(eventObject['start']['dateTime']), newServiceDuration)}\nPlease choose another time that works best for you as well as make sure there is enough time available to finish ({newServiceDuration} hours.)"
+                            fullList = populateAvailableTimesMonth()
+
+                            session.currentConfirmationField = 'start'
+                            databaseSession.commit()
+                            return errorMessage + "\n" + errorMessage2 + "\n" + fullList, False
+
+                    # otherwise proceed with changes
+                    else: 
+                        pass
+
 
             for field, keywords in languageFieldMap.items(): 
                 if any(keyword in userInput for keyword in keywords):
