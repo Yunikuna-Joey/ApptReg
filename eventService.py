@@ -1109,19 +1109,16 @@ Time: {convertDateTime(dtObjectStart, durationHour)}
     return eventObjectInfo
 
 
-def populateAvailableSlots(): 
+def populateAvailableSlots(datetimeObject): 
     try: 
         calendarService = initializeCalendarService()
 
         # Set the timezone to 'America/Los_Angeles'
-        tz_los_angeles = ZoneInfo('America/Los_Angeles')
+        # tz_los_angeles = ZoneInfo('America/Los_Angeles')
 
         # replacing the current datetime object with information of timezone and setting the time be 1AM [doesn't have to be 1am just some arbitary time that is before the working hours]
-        currentDayObject = datetime.now(tz=tz_los_angeles).replace(hour=1, minute=0, second=0, microsecond=0)
-        # print(f"Value of currentDayobject {currentDayObject}")
-        
-        # # Print the dateTimeObject with the assigned timezone for debugging
-        # print(f"[listAvailableTime]: {currentDayObject}")
+        # currentDayObject = datetime.now(tz=tz_los_angeles).replace(hour=1, minute=0, second=0, microsecond=0)
+        currentDayObject = datetimeObject.astimezone(ZoneInfo('America/Los_Angeles')).replace(hour=1, minute=0, second=0, microsecond=0)
 
         startThreshhold = currentDayObject
 
@@ -1219,12 +1216,15 @@ def populateAvailableSlots():
         print(f"[listAvailableTimeValidMonth]: There was an error displaying the available weekend times {e}") 
 
 def isTimeAvailable(startTimeObject, duration): 
+    """ 
+    Takes in a datetimeObject and the duration of the specific service type 
+    """
     eventStart = startTimeObject.astimezone(ZoneInfo('America/Los_Angeles'))
     eventEnd = eventStart + timedelta(hours=duration)
 
     eventDate = startTimeObject.strftime('%Y-%m-%d')
 
-    availableSlots = populateAvailableSlots()
+    availableSlots = populateAvailableSlots(startTimeObject)
 
     print(f"This is available slots {availableSlots}")
 
