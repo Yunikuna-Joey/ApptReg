@@ -615,10 +615,11 @@ def populateAvailableTimesMonth():
             else:
                 finalList += f"No available times on {date}\n" 
 
+        # This is a string list with the available times 
         return finalList
         
     except Exception as e: 
-        print(f"[listAvailableTimeValidMonth]: There was an error displaying the available weekend times {e}")
+        print(f"[populateAvailableTimeMonth]: There was an error displaying the available weekend times {e}")
 
 #* This will list all the available times for the entire month
 def listAvailableTimeMonth(dateTimeObject): 
@@ -1263,10 +1264,14 @@ def populateAvailableSlots():
         # Iterating through every day of the current month 
         # starting from the first day of the current month
         currDay = startThreshhold
+        weekendsFound = False 
+
         while currDay <= endOfMonth: 
             # if the current day is a weekend [5, 6] representing 
             # Saturday and Sunday respectively 
             if currDay.weekday() in [5, 6]: 
+                weekendsFound = True 
+
                 #*** we are currently iterating through the eventList of event objects each time, but
                 #*** we can make it less taxing by removing the already processed days/event objects
                 #*** to improve performance slightly
@@ -1316,6 +1321,69 @@ def populateAvailableSlots():
             
             # move to the next day
             currDay += timedelta(days=1)
+            
+        # if no weekends were found, then we need to increment the next and search
+        if not weekendsFound: 
+            nextMonth = startThreshhold.replace(day=1)
+            if nextMonth.month == 12: 
+                nextMonth = nextMonth.replace(year=nextMonth.year + 1, month=1)
+            else: 
+                nextMonth = nextMonth.replace(month=nextMonth.month + 1)
+
+            nextMonthEnd = nextMonth.replace(day=1).replace(month=nextMonth.month + 1) - timedelta(seconds=1) 
+
+            # used in the query for the Google Calendar 
+            timeMinNextMonth = nextMonth.isoformat()
+            timeMaxNextMonth = nextMonthEnd.isoformat()
+
+            # Query events for the next month
+            resultListNextMonth = calendarService.events().list(
+                calendarId=TARGET_CALENDAR_ID,
+                timeMin=timeMinNextMonth,
+                timeMax=timeMaxNextMonth,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+
+            eventListNextMonth = resultListNextMonth.get('items', [])
+
+            nextCurrDay = nextMonth 
+
+            while nextCurrDay <= nextMonthEnd: 
+                if nextCurrDay.weekday() in [5, 6]: 
+                    weekendsFound = True
+
+                    weekendObjectList = [ 
+                        event for event in eventListNextMonth
+                        if event['start'].get('dateTime', event['start'].get('date')).startswith(nextCurrDay.strftime('%Y-%m-%d'))
+                    ]
+
+                    timeStart = nextCurrDay.replace(hour=8, minute=0, second=0, microsecond=0)
+                    timeEnd = nextCurrDay.replace(hour=20, minute=0, second=0, microsecond=0)
+
+                    timeAvailable = [(timeStart, timeEnd)]
+
+                    for event in weekendObjectList: 
+                        eventStart = datetime.fromisoformat(event['start'].get('dateTime'))
+                        eventEnd = datetime.fromisoformat(event['end'].get('dateTime'))
+
+                        newAvailableTimes = [] 
+                        for workStart, workEnd in timeAvailable: 
+                            if eventStart <= workEnd and eventEnd >= workStart: 
+                                if workStart < eventStart: 
+                                    newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
+                                
+                                if eventEnd < workEnd: 
+                                    newAvailableTimes.append((eventEnd, workEnd))
+                            
+                            else: 
+                                newAvailableTimes.append((workStart, workEnd))
+
+                        timeAvailable = newAvailableTimes
+
+                    availableSlots[nextCurrDay.strftime('%Y-%m-%d')] = timeAvailable
+            
+                nextCurrDay += timedelta(days=1)
 
         return availableSlots
     
