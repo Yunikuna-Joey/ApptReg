@@ -255,15 +255,14 @@ def additionScenario(userId, userInput, databaseSession):
                         if session.serviceDuration > prevDurationTime:
                             # check if the current startTime is avaiable for the new duration 
                             if isTimeAvailable(eventObject['start'], session.serviceDuration) == False: 
-                                errorMessage = f"Your new cleaning service could not be performed at your initial appointment time {convertDateTime(session.eventObject['start'], session.serviceDuration)}"
-                                errorMessage2 = f"Please choose another time that works best for you as well as make sure there is enough time available to finish in ({session.serviceDuration} hours.)"
+                                responseMessage = "Your new cleaning service could not be performed at your initial appointment time \nPlease choose another time that works with your new cleaning service.)"
 
                                 scheduledList = populateAvailableTimesMonth()
                                 
                                 #* The plan might be to just overwrite the user session's current confirmation field to be the field that handles checking for a valid time
                                 session.currentConfirmationField = 'start'
                                 databaseSession.commit()
-                                return errorMessage + "\n" + errorMessage2 + "\n" + scheduledList, False
+                                return responseMessage + scheduledList, False
                         
                         else: 
                             # if we do not trigger the above conditional to pursue time story-line then we need a way to get back to reviewing the confirmation eventObject details 
@@ -578,19 +577,18 @@ def additionScenario(userId, userInput, databaseSession):
                     return response, False
                     
                 elif session.currentConfirmationField == 'description': 
-                    # working 
                     if serviceTypeChecker(userInput) == False: 
                         response = "That is not a service we offer. Please choose a service we offer: interior, exterior, or both."
-                        return response, False
+                        return response, False 
                     
-                    # retrieve the instance of the current google object 
+                    # request the eventObject to obtain the previous service duration 
                     requestedEventObject = getEventObjectById(session.confirmationCode)
 
-                    # This will hold the previous service duration 
+                    # this saves the current duration time of the service type before modifying
                     session.serviceDuration = serviceToHours(requestedEventObject['description'].split('\n')[4])
-                    databaseSession.commit() 
+                    databaseSession.commit()
 
-                    # Process the userInput and save the new service duration that the client wants
+                    # process the input (the change the client wants to perform)
                     if 'both' in userInput.lower(): 
                         userInput = "Exterior & Interior"
                         newServiceDuration = serviceToHours(userInput)
@@ -598,11 +596,46 @@ def additionScenario(userId, userInput, databaseSession):
                     else: 
                         newServiceDuration = serviceToHours(userInput)
 
-                    # This is for the scenario that the client wants to change from interior -> both [interior & exterior]
+                    # if we are changing from single service to double service [START OUR TESTING FROM HERE AND GO DOWN THE CONDITIONALS]
                     if newServiceDuration > session.serviceDuration: 
-                        if isTimeAvailable(datetime.fromisoformat(requestedEventObject['start']['dateTime'], newServiceDuration)) == False:
-                            message1 = f"Your new cleaning service could not be performed at your initial appointment time {convertDateTime(datetime.fromisoformat(eventObject['start']['dateTime']), newServiceDuration)}"
-                            message2 = f"[Teni]: Please choose another time that works best for you as well as make sure there is enough time available to finish ({newServiceDuration} hours.)")
+        
+                        # determine if the time is available for new service, if it is not, then we will shift the client to the start time checking
+                        if isTimeAvailable(datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration) == False: 
+                            responseMessage = "Your new cleaning service could not be performed at your initial appointment time \nPlease choose another time that works with your new cleaning service.)"
+                            fullList = populateAvailableTimesMonth()
+
+                            # moves the client into the start time storyline 
+                            session.currentConfirmationField = 'start'
+                            # using the descriptionObject field to store the new change that the client wants to perform
+                            session.descriptionObject = userInput
+
+                            databaseSession.commit()
+
+                            return responseMessage + '\n' + fullList, False
+                        
+                        # otherwise if the time is available continue with changes
+                        else: 
+                            editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
+                            editServiceType(session.confirmationCode, userInput)
+
+                    # otherwise proceed with changes
+                    # both 12:00 - 2:00 ==> interior/exterior 12:00 - 1:00
+                    elif newServiceDuration < session.serviceDuration: 
+                        # [logic]: if there was sufficient time for a 2 hour service, it automatically is available for a 1 hour service
+                        editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
+                        editServiceType(session.confirmationCode, userInput)
+
+                        #* possibly need more session management fields here but continue first
+                        session.currentConfirmationField = None 
+                        databaseSession.commit()
+                    
+                    else:
+                        # this will be accounting for the change of only interior <-> exterior 
+                        editServiceType(session.confirmationCode, userInput)
+
+                        #* possibly need more session management fields here but continue first
+                        session.currentConfirmationField = None 
+                        databaseSession.commit()
                 
                 elif session.currentConfirmationField == 'start': 
                     try: 
