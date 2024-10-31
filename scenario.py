@@ -431,7 +431,7 @@ def additionScenario(userId, userInput, databaseSession):
                 return response, False
 
     # edit scenario [intentObject, confirmationCode, currentField, currentConfirmationField]
-    elif intentObject in ['modify']:
+    elif intentObject in ['modify']:        
         # this will prompt the user to enter their confirmation code [stage1]
         if session.currentField is None: 
             session.currentField = 'awaitConfirmationCode'
@@ -465,19 +465,6 @@ def additionScenario(userId, userInput, databaseSession):
                 'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
                 'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
             }
-            
-            # need a conditional to check the userInput is == done and then reset values in the data entry
-            if userInput.lower() in ['done, finished, finish, finalize']: 
-                # reset session management
-                session.currentField = None 
-                session.currentConfirmationField = None 
-                session.confirmationCode = None 
-                session.intentObject = None 
-                #* come back to this to determine if this is working as intended 
-                session.descriptionObject = None 
-                responseMessage = "Please feel free to speak with me again if you have anything else you would like to change about your appointment!"
-
-                return responseMessage, False 
 
             if session.currentConfirmationField: 
                 if session.currentConfirmationField == 'number': 
@@ -833,7 +820,7 @@ def additionScenario(userId, userInput, databaseSession):
 
                     response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
                     return response, False
-                    
+
             tracker = False 
             for field, keywords in languageFieldMap.items(): 
                 if any(keyword in userInput for keyword in keywords):
@@ -846,9 +833,22 @@ def additionScenario(userId, userInput, databaseSession):
                     prompt = generatePrompt(field)
                     return prompt, False 
 
-            if not tracker: 
+            if not tracker and userInput.lower() not in ['done', 'finalize', 'finish', 'finalize']: 
                 response = "I did not understand that. Please let me know which category you would like to change or simply say 'done' when finished."
                 return response, False 
+
+            elif not tracker and userInput.lower() in ['done', 'finalize', 'finish', 'finalize']: 
+                # reset session management
+                session.currentField = None 
+                session.currentConfirmationField = None 
+                session.confirmationCode = None 
+                session.intentObject = None 
+                #* come back to this to determine if this is working as intended 
+                session.descriptionObject = None 
+                databaseSession.commit()
+                responseMessage = "Please feel free to speak with me again if you have anything else you would like to change about your appointment!"
+
+                return responseMessage, False 
 
     else: 
         # reset if something was made
