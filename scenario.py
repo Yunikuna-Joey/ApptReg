@@ -843,6 +843,7 @@ def additionScenario(userId, userInput, databaseSession):
                 session.currentConfirmationField = None 
                 session.confirmationCode = None 
                 session.intentObject = None 
+                session.serviceDuration = None
                 #* come back to this to determine if this is working as intended 
                 session.descriptionObject = None 
                 databaseSession.commit()
