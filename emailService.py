@@ -144,23 +144,28 @@ def createDeleteConfirmationMessage(customerName, recipientEmail, vehicleInfo, c
     
     #* Message content 
     body = f""" 
-Hello {customerName}, 
+<html> 
+<body>
+<p>Hello {customerName}, </p>
 
-This message is to inform you of your appointment cancellation. 
+<p>This message is to inform you of your appointment cancellation. <br>
 
-Cancelled appointment details: 
-**Car**: {vehicleInfo} 
-**Type of Cleaning**: {cleanType}
-**Time**: {convertDateTime(startTime, serviceToHours(cleanType))}
+<p><b>Cancelled appointment details:</b><br> 
+Car: <b>{vehicleInfo}</b><br> 
+Type of Cleaning: <b>{cleanType}</b><br>
+Time: <b>{convertDateTime(startTime, serviceToHours(cleanType))}</b><br>
 
-Feel free to re-book your appointment to a time that works best for you. 
-Have a great day, 
-Ten (Just an AutoBot)
+<p>Feel free to re-book your appointment to a time that works best for you.</p>
 
-Do not reply back to this message, inbox is unmonitored.
+<p>Have a great day,<br>
+Ten (Just an AutoBot)</p>
+
+<p><i>Do not reply back to this message, inbox is unmonitored.</i></p>
+</body>
+</html>
     """
 
-    message.attach(MIMEText(body, 'plain'))
+    message.attach(MIMEText(body, 'html'))
 
     print("[createDeleteConfirmationMessage]: Message object created successfully.")
     print(f"This is the message delete confirmation {message}")
