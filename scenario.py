@@ -499,7 +499,7 @@ def additionScenario(userId, userInput, databaseSession):
                     # session.currentField = "changes"
                     databaseSession.commit()
 
-                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else! If you are done, simplay say 'done'."
                     return response, False 
                     
                 elif session.currentConfirmationField == 'email': 
@@ -530,7 +530,7 @@ def additionScenario(userId, userInput, databaseSession):
                     # session.currentField = "changes"
                     databaseSession.commit()
 
-                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else! If you are done, simply say 'done'."
                     return response, False
                     
                 elif session.currentConfirmationField == 'carModel': 
@@ -560,7 +560,7 @@ def additionScenario(userId, userInput, databaseSession):
                     # session.currentField = "changes"
                     databaseSession.commit()
 
-                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else! If you are done, simply say 'done'."
                     return response, False
                     
                 elif session.currentConfirmationField == 'description': 
@@ -585,7 +585,7 @@ def additionScenario(userId, userInput, databaseSession):
 
                     # if we are changing from single service to double service 
                     if newServiceDuration > session.serviceDuration: 
-                        #*** Start checking this one [Explore this first storyline to the end where we jump to start validation and continue when extension is not available]
+                        # [This works]
                         # determine if the time is available for new service, if it is not, then we will shift the client to the start time checking [first statement is errorChecking and return error message ]
                         if checkTimeExtension(datetime.fromisoformat(requestedEventObject['start']['dateTime'])) == False: 
                             responseMessage = "Your new cleaning service could not be performed at your initial appointment time \nPlease choose another time that works with your new cleaning service.)"
@@ -622,11 +622,11 @@ def additionScenario(userId, userInput, databaseSession):
 
                             sendEmail(editMessageObject, eventObject['description'].split('\n')[2])
 
-                            responseMessage = "I have changed your cleaning service. Please make sure you acknowledge that this will be a longer appointment time so plan accordingly."
+                            responseMessage = "I have changed your cleaning service. Please make sure you acknowledge that this will be a longer appointment time so plan accordingly. If you are done making changes, simply say 'done'."
                             return responseMessage, False 
 
                     # otherwise proceed with changes
-                    # both 12:00 - 2:00 ==> interior/exterior 12:00 - 1:00
+                    # both 12:00 - 2:00 ==> interior/exterior 12:00 - 1:00 [This works]
                     elif newServiceDuration < session.serviceDuration: 
                         # [logic]: if there was sufficient time for a 2 hour service, it automatically is available for a 1 hour service
                         editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
@@ -652,7 +652,7 @@ def additionScenario(userId, userInput, databaseSession):
                         session.currentConfirmationField = None 
                         databaseSession.commit()
 
-                        responseMessage = "I have changed your cleaning service. Check your email for your new appointment details!"
+                        responseMessage = "I have changed your cleaning service. Check your email for your new appointment details! If you are done making changes, simply say 'done'."
                         return responseMessage, False 
                     
                     else:
@@ -679,7 +679,7 @@ def additionScenario(userId, userInput, databaseSession):
                         session.currentConfirmationField = None 
                         databaseSession.commit()
 
-                        responseMessage = "I have changed your cleaning service. Check your email for your new appointment details!"
+                        responseMessage = "I have changed your cleaning service. Check your email for your new appointment details! If you are done making changes, simply say 'done'."
                         return responseMessage, False 
                 
                 elif session.currentConfirmationField == 'start': 
@@ -793,7 +793,7 @@ def additionScenario(userId, userInput, databaseSession):
                     session.currentConfirmationField = None 
                     databaseSession.commit()
 
-                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else! If you are done, simply say 'done'."
                     return response, False
 
                 elif session.currentConfirmationField == 'summary': 
@@ -818,7 +818,7 @@ def additionScenario(userId, userInput, databaseSession):
                     session.currentConfirmationField = None 
                     databaseSession.commit()
 
-                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                    response = "I have made the changes to your appointment, please let me know if you would like to change anything else! If you are done, simply say 'done'."
                     return response, False
 
             tracker = False 
