@@ -1327,7 +1327,7 @@ def checkTimeExtension(datetimeObject):
     eventDate = eventStart.strftime('%Y-%m-%d')
 
     availableTimeList = populateAvailableSlots() 
-    print(f"This is timeList {availableTimeList}")
+    # print(f"This is timeList {availableTimeList}")
 
     # if the key is not in the list [we have no availability on that date]
     if eventDate not in availableTimeList:

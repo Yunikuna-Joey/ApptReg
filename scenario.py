@@ -431,20 +431,7 @@ def additionScenario(userId, userInput, databaseSession):
                 return response, False
 
     # edit scenario [intentObject, confirmationCode, currentField, currentConfirmationField]
-    elif intentObject in ['modify']: 
-        # need a conditional to check the userInput is == done and then reset values in the data entry
-        if userInput.strip().lower() in ['done, finished, finish, finalize']: 
-            # reset session management
-            session.currentField = None 
-            session.currentConfirmationField = None 
-            session.confirmationCode = None 
-            session.intentObject = None 
-            #* come back to this to determine if this is working as intended 
-            session.descriptionObject = None 
-            responseMessage = "Please feel free to speak with me again if you have anything else you would like to change about your appointment!"
-
-            return responseMessage, False 
-
+    elif intentObject in ['modify']:
         # this will prompt the user to enter their confirmation code [stage1]
         if session.currentField is None: 
             session.currentField = 'awaitConfirmationCode'
@@ -478,6 +465,19 @@ def additionScenario(userId, userInput, databaseSession):
                 'description': ['cleaning', 'service', 'description', 'change service', 'update cleaning'],
                 'start': ['time', 'date', 'appointment time', 'change time', 'change date'],
             }
+            
+            # need a conditional to check the userInput is == done and then reset values in the data entry
+            if userInput.lower() in ['done, finished, finish, finalize']: 
+                # reset session management
+                session.currentField = None 
+                session.currentConfirmationField = None 
+                session.confirmationCode = None 
+                session.intentObject = None 
+                #* come back to this to determine if this is working as intended 
+                session.descriptionObject = None 
+                responseMessage = "Please feel free to speak with me again if you have anything else you would like to change about your appointment!"
+
+                return responseMessage, False 
 
             if session.currentConfirmationField: 
                 if session.currentConfirmationField == 'number': 
@@ -596,9 +596,9 @@ def additionScenario(userId, userInput, databaseSession):
                     else: 
                         newServiceDuration = serviceToHours(userInput)
 
-                    # if we are changing from single service to double service [START OUR TESTING FROM HERE AND GO DOWN THE CONDITIONALS]
+                    # if we are changing from single service to double service 
                     if newServiceDuration > session.serviceDuration: 
-        
+                        #*** Start checking this one [Explore this first storyline to the end where we jump to start validation and continue when extension is not available]
                         # determine if the time is available for new service, if it is not, then we will shift the client to the start time checking [first statement is errorChecking and return error message ]
                         if checkTimeExtension(datetime.fromisoformat(requestedEventObject['start']['dateTime'])) == False: 
                             responseMessage = "Your new cleaning service could not be performed at your initial appointment time \nPlease choose another time that works with your new cleaning service.)"
@@ -613,7 +613,7 @@ def additionScenario(userId, userInput, databaseSession):
 
                             return responseMessage + '\n' + fullList, False
                         
-                        # otherwise if the time is available continue with changes [continue changes and return a success message back to the user]
+                        # otherwise if the time is available continue with changes [continue changes and return a success message back to the user] [This works]
                         else:
                             # perform the back-end changes to the client appointment 
                             editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
@@ -775,7 +775,8 @@ def additionScenario(userId, userInput, databaseSession):
                         response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
                         return response, False
 
-                    except (ValueError, TypeError): 
+                    except (ValueError, TypeError) as e: 
+                        print(f"This is the error {e}")
                         response = "I'm sorry, I didn't understand the date and time you provided. Please provide your desired appointment time and date in this format (September 18 at 10AM)"
                         return response, False 
                     
@@ -833,16 +834,21 @@ def additionScenario(userId, userInput, databaseSession):
                     response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
                     return response, False
                     
-
+            tracker = False 
             for field, keywords in languageFieldMap.items(): 
                 if any(keyword in userInput for keyword in keywords):
                     # if we find a match to a valid field that the user wants to change
                     session.currentConfirmationField = field
                     databaseSession.commit()
 
+                    tracker = True 
+
                     prompt = generatePrompt(field)
                     return prompt, False 
 
+            if not tracker: 
+                response = "I did not understand that. Please let me know which category you would like to change or simply say 'done' when finished."
+                return response, False 
 
     else: 
         # reset if something was made
