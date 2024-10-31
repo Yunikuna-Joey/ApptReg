@@ -726,7 +726,7 @@ def additionScenario(userId, userInput, databaseSession):
                         if session.descriptionObject is not None: 
                             editServiceType(session.confirmationCode, session.descriptionObject)
                             newEventObject = getEventObjectById(session.confirmationCode)
-                            editTimeSlot(session.confirmationCode, startTime, serviceToHours(newEventObject['description'].split('\n'))[4])
+                            editTimeSlot(session.confirmationCode, startTime, serviceToHours(newEventObject['description'].split('\n')[4]))
                             # after the timeslot update
                             newInstanceObject = getEventObjectById(session.confirmationCode)
                             editMessageObject = createEditConfirmationMessage(
@@ -741,14 +741,14 @@ def additionScenario(userId, userInput, databaseSession):
                                 serviceToHours(newInstanceObject['description'].split('\n')[4])
                             )
 
-                            sendEmail(editMessageObject, requestedEventObject['description'].split('\n')[2])
+                            sendEmail(editMessageObject, newInstanceObject['description'].split('\n')[2])
                         
                         else:
                             # grab the current object details from the calendar 
                             requestedEventObject = getEventObjectById(session.confirmationCode)
 
                             # when all conditions are True, push changes into the eventObject within the Google Calendar 
-                            editTimeSlot(session.confirmationCode, startTime, serviceToHours(requestedEventObject['description'].split('\n'))[4])
+                            editTimeSlot(session.confirmationCode, startTime, serviceToHours(requestedEventObject['description'].split('\n')[4]))
 
                             newObject = getEventObjectById(session.confirmationCode)
 
@@ -772,7 +772,7 @@ def additionScenario(userId, userInput, databaseSession):
                         # session.currentField = "changes"
                         databaseSession.commit()
 
-                        response = "I have made the changes to your appointment, please let me know if you would like to change anything else!"
+                        response = "I have made the changes to your appointment, please let me know if you would like to change anything else! If you are done, simply say 'done'!"
                         return response, False
 
                     except (ValueError, TypeError) as e: 
