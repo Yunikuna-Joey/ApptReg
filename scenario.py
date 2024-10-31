@@ -7,7 +7,7 @@ from datetime import datetime
 from emailService import createConfirmationMessage, createDeleteConfirmationMessage, createEditConfirmationMessage, sendEmail
 from model import initializeChatModel, initializeClassificationModel
 from helper import convertDateTime, displayConfirmationMessage, displayConfirmationObject, emailChecker, generatePrompt, locationChecker, phoneNumberChecker, carDescriptionchecker, serviceToHours, serviceTypeChecker, getInstagramUsername
-from eventService import addEvent, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editLocation, editNumber, editServiceType, editSummary, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
+from eventService import addEvent, checkTimeExtension, checkWeekendCondition, checkDayState, checkWorkHour, createEventObject, deleteEvent, displayEventObjectInfo, editEmail, editLocation, editNumber, editServiceType, editSummary, editTimeSlot, editVehicle, getEventObjectById, isTimeAvailable, populateAvailableTimesMonth, populateEventsForDay
 
 # database import 
 from sessionManager import UserSession
@@ -599,8 +599,8 @@ def additionScenario(userId, userInput, databaseSession):
                     # if we are changing from single service to double service [START OUR TESTING FROM HERE AND GO DOWN THE CONDITIONALS]
                     if newServiceDuration > session.serviceDuration: 
         
-                        # determine if the time is available for new service, if it is not, then we will shift the client to the start time checking
-                        if isTimeAvailable(datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration) == False: 
+                        # determine if the time is available for new service, if it is not, then we will shift the client to the start time checking [first statement is errorChecking and return error message ]
+                        if checkTimeExtension(datetime.fromisoformat(requestedEventObject['start']['dateTime'])) == False: 
                             responseMessage = "Your new cleaning service could not be performed at your initial appointment time \nPlease choose another time that works with your new cleaning service.)"
                             fullList = populateAvailableTimesMonth()
 
@@ -613,10 +613,30 @@ def additionScenario(userId, userInput, databaseSession):
 
                             return responseMessage + '\n' + fullList, False
                         
-                        # otherwise if the time is available continue with changes
-                        else: 
+                        # otherwise if the time is available continue with changes [continue changes and return a success message back to the user]
+                        else:
+                            # perform the back-end changes to the client appointment 
                             editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
                             editServiceType(session.confirmationCode, userInput)
+
+                            eventObject = getEventObjectById(session.confirmationCode)
+
+                            editMessageObject = createEditConfirmationMessage(
+                                session.confirmationCode, 
+                                eventObject['summary'], 
+                                eventObject['description'].split('\n')[2],
+                                eventObject['description'].split('\n')[1],
+                                eventObject['description'].split('\n')[3],
+                                eventObject['location'],
+                                eventObject['description'].split('\n')[4],
+                                datetime.fromisoformat(eventObject['start']['dateTime']),
+                                serviceToHours(eventObject['description'].split('\n')[4])
+                            )
+
+                            sendEmail(editMessageObject, eventObject['description'].split('\n')[2])
+
+                            responseMessage = "I have changed your cleaning service. Please make sure you acknowledge that this will be a longer appointment time so plan accordingly."
+                            return responseMessage, False 
 
                     # otherwise proceed with changes
                     # both 12:00 - 2:00 ==> interior/exterior 12:00 - 1:00
@@ -625,17 +645,55 @@ def additionScenario(userId, userInput, databaseSession):
                         editTimeSlot(session.confirmationCode, datetime.fromisoformat(requestedEventObject['start']['dateTime']), newServiceDuration)
                         editServiceType(session.confirmationCode, userInput)
 
+                        eventObject = getEventObjectById(session.confirmationCode)
+
+                        editMessageObject = createEditConfirmationMessage(
+                            session.confirmationCode, 
+                            eventObject['summary'], 
+                            eventObject['description'].split('\n')[2],
+                            eventObject['description'].split('\n')[1],
+                            eventObject['description'].split('\n')[3],
+                            eventObject['location'],
+                            eventObject['description'].split('\n')[4],
+                            datetime.fromisoformat(eventObject['start']['dateTime']),
+                            serviceToHours(eventObject['description'].split('\n')[4])
+                        )
+
+                        sendEmail(editMessageObject, eventObject['description'].split('\n')[2])
+
                         #* possibly need more session management fields here but continue first
                         session.currentConfirmationField = None 
                         databaseSession.commit()
+
+                        responseMessage = "I have changed your cleaning service. Check your email for your new appointment details!"
+                        return responseMessage, False 
                     
                     else:
                         # this will be accounting for the change of only interior <-> exterior 
                         editServiceType(session.confirmationCode, userInput)
 
+                        eventObject = getEventObjectById(session.confirmationCode)
+
+                        editMessageObject = createEditConfirmationMessage(
+                            session.confirmationCode, 
+                            eventObject['summary'], 
+                            eventObject['description'].split('\n')[2],
+                            eventObject['description'].split('\n')[1],
+                            eventObject['description'].split('\n')[3],
+                            eventObject['location'],
+                            eventObject['description'].split('\n')[4],
+                            datetime.fromisoformat(eventObject['start']['dateTime']),
+                            serviceToHours(eventObject['description'].split('\n')[4])
+                        )
+
+                        sendEmail(editMessageObject, eventObject['description'].split('\n')[2])
+
                         #* possibly need more session management fields here but continue first
                         session.currentConfirmationField = None 
                         databaseSession.commit()
+
+                        responseMessage = "I have changed your cleaning service. Check your email for your new appointment details!"
+                        return responseMessage, False 
                 
                 elif session.currentConfirmationField == 'start': 
                     try: 

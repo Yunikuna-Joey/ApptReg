@@ -1109,113 +1109,6 @@ Time: {convertDateTime(dtObjectStart, durationHour)}
     """
     return eventObjectInfo
 
-#* keep as a reference to using a datetime object
-# def populateAvailableSlots(datetimeObject): 
-#     try: 
-#         calendarService = initializeCalendarService()
-
-#         # Set the timezone to 'America/Los_Angeles'
-#         # tz_los_angeles = ZoneInfo('America/Los_Angeles')
-
-#         # replacing the current datetime object with information of timezone and setting the time be 1AM [doesn't have to be 1am just some arbitary time that is before the working hours]
-#         # currentDayObject = datetime.now(tz=tz_los_angeles).replace(hour=1, minute=0, second=0, microsecond=0)
-#         currentDayObject = datetimeObject.astimezone(ZoneInfo('America/Los_Angeles')).replace(hour=1, minute=0, second=0, microsecond=0)
-
-#         startThreshhold = currentDayObject
-
-#         if startThreshhold.month == 12: 
-#             endOfMonth = startThreshhold.replace(year=startThreshhold.year + 1, month=1, day=1) - timedelta(seconds=1)
-#         else:
-#             endOfMonth = startThreshhold.replace(month=startThreshhold.month + 1, day=1) - timedelta(seconds=1)
-        
-        
-#         # declare our constraints of start day of the month and end day of the month 
-#         # in isoFormat()
-#         timeMin = startThreshhold.isoformat()
-#         timeMax = endOfMonth.isoformat() 
-
-#         # this will return a dict object back or dict of dict
-#         resultList = calendarService.events().list(
-#             calendarId=TARGET_CALENDAR_ID,
-#             timeMin=timeMin, 
-#             timeMax=timeMax,
-#             singleEvents=True,
-#             orderBy='startTime'
-#         ).execute()
-
-#         # this list just holds all of the event objects within the current constraint
-#         # the constraint is currently just the entire 1 month of the time of function invoke
-#         eventList = resultList.get('items', [])
-
-#         if not eventList: 
-#             print("[listAvailableTime]: There are no events this month")
-        
-#         # (8, 20) signifies the hours from 8AM to 8PM  [24 hour format]
-#         # workHours = [(8, 20)] 
-#         availableSlots = {}
-
-#         # Iterating through every day of the current month 
-#         # starting from the first day of the current month
-#         currDay = startThreshhold
-#         while currDay <= endOfMonth: 
-#             # if the current day is a weekend [5, 6] representing 
-#             # Saturday and Sunday respectively 
-#             if currDay.weekday() in [5, 6]: 
-#                 #*** we are currently iterating through the eventList of event objects each time, but
-#                 #*** we can make it less taxing by removing the already processed days/event objects
-#                 #*** to improve performance slightly
-#                 weekendObjectList = [
-#                     # list comprehension to iterate through each event in event list
-#                     event for event in eventList
-#                     # the condition to only get the events that match the current day we are iterating on
-#                     if event['start'].get('dateTime', event['start'].get('date')).startswith(currDay.strftime('%Y-%m-%d'))
-#                 ]
-
-#                 # create the startTime and endTime
-#                 timeStart = currDay.replace(hour=8, minute=0, second=0, microsecond=0)
-#                 timeEnd = currDay.replace(hour=20, minute=0, second=0, microsecond=0)
-
-#                 # This is essentially representing the company's working hours
-#                 timeAvailable = [(timeStart, timeEnd)]
-
-#                 # iterating over all the events that happen to land on a weekend
-#                 for event in weekendObjectList: 
-#                     """ From the event object that we are processing, 
-#                     process that specific event object's start and end time(s)
-#                     """
-#                     eventStart = datetime.fromisoformat(event['start'].get('dateTime'))
-#                     eventEnd = datetime.fromisoformat(event['end'].get('dateTime'))
-
-#                     # split available times around the event
-#                     newAvailableTimes = []
-#                     for workStart, workEnd in timeAvailable: 
-#                         # If event starts before the workEnd and ends after the workStart, it overlaps
-#                         if eventStart <= workEnd and eventEnd >= workStart: 
-#                             # If the event starts after the workStart, keep the time before the event
-#                             if workStart < eventStart: 
-#                                 #* the timedelta here should be replaced with the type of cleaning [interior/exterior = 1hr, both = 2hr]
-#                                 newAvailableTimes.append((workStart, (eventStart - timedelta(hours=1) )))
-#                                 # newAvailableTimes.append((workStart, eventStart))
-                            
-#                             # If the event ends before the workEnd, keep the time after the event
-#                             if eventEnd < workEnd: 
-#                                 newAvailableTimes.append((eventEnd, workEnd))
-#                         else: 
-#                             # No overlap, so keep the original time slot
-#                             newAvailableTimes.append((workStart, workEnd))
-                            
-#                     timeAvailable = newAvailableTimes
-                    
-#                 availableSlots[currDay.strftime('%Y-%m-%d')] = timeAvailable
-            
-#             # move to the next day
-#             currDay += timedelta(days=1)
-
-#         return availableSlots
-    
-#     except Exception as e: 
-#         print(f"[listAvailableTimeValidMonth]: There was an error displaying the available weekend times {e}") 
-
 #* this iteration uses the current day as a reference 
 def populateAvailableSlots(): 
     try: 
@@ -1390,6 +1283,7 @@ def populateAvailableSlots():
     except Exception as e: 
         print(f"[listAvailableTimeValidMonth]: There was an error displaying the available weekend times {e}") 
 
+# This function is used for the create storyline when we are initially checking only if the client requested time is available from the slots on that requested day
 def isTimeAvailable(startTimeObject, duration): 
     """ 
     Takes in a datetimeObject and the duration of the specific service type 
@@ -1416,3 +1310,32 @@ def isTimeAvailable(startTimeObject, duration):
     
     # otherwise return false 
     return False 
+
+# this one is going to check for a possible extension ONLY and nothing else 
+def checkTimeExtension(datetimeObject): 
+    """
+    The function will take in a startTime datetime object and the duration of the appointment from the initial startTime  
+    ** Note: does not seem to detect manual events added directly on the calendar, but it will detect events made through the bot
+    """
+
+    eventStart = datetimeObject.astimezone(ZoneInfo('America/Los_Angeles')) # 8am
+    eventEnd = eventStart + timedelta(hours=1)                              # 9am
+
+    extensionEnd = eventEnd + timedelta(hours=1)                            #10am
+
+    # used to determine which key to look into in timeList
+    eventDate = eventStart.strftime('%Y-%m-%d')
+
+    availableTimeList = populateAvailableSlots() 
+    print(f"This is timeList {availableTimeList}")
+
+    # if the key is not in the list [we have no availability on that date]
+    if eventDate not in availableTimeList:
+        return False 
+
+    for start, end in availableTimeList[eventDate]:
+        # Check if the extension period (9 AM - 10 AM) is within an available slot.
+        if eventEnd >= start and extensionEnd <= end:
+            return True
+
+    return False
