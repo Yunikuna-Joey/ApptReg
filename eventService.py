@@ -1009,11 +1009,19 @@ def checkDayState(datetimeObject):
 
 # This function will check to see if the requested day is within the business hours 
 def checkWorkHour(datetimeObject): 
+    """
+    Return a boolean indicating whether or not the datetimeObject is within the workHour for that day
+    """
+        
     tz = ZoneInfo('America/Los_Angeles')
     datetimeObject = datetimeObject.astimezone(tz)
     
     workHourBegin = datetimeObject.replace(hour=8, minute=0, second=0, microsecond=0)
     workHourEnd = datetimeObject.replace(hour=20, minute=0, second=0, microsecond=0)
+
+    print(f"This is workhourbegin {workHourBegin}")
+    print(f"This is datetimeObject being parsed {datetimeObject}")
+    print(f"This is workhourend {workHourEnd}")
 
     return workHourBegin <= datetimeObject < workHourEnd 
 
